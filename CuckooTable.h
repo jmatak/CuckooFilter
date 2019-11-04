@@ -18,79 +18,25 @@ private:
     Bucket *buckets;
 
 public:
-    CuckooTable(const size_t table_size) : table_size(table_size) {
-        buckets = new Bucket[table_size];
-        memset(buckets, 0, sizeof(fp_type)*table_size); // set all bits to 0
-    }
+    explicit CuckooTable(size_t table_size);
 
-    ~CuckooTable() {
-        delete[] buckets;
-    }
+    ~CuckooTable();
 
-    size_t getTableSize() const {
-        return table_size;
-    }
+    size_t getTableSize() const;
 
-    size_t maxNoOfElements() {
-        return entries_per_bucket*table_size;
-    }
+    size_t maxNoOfElements();
 
-    inline fp_type getFingerprint(const size_t i, const size_t j) {
-        const fp_type *bucket = buckets[i].data;
-        fp_type fingerprint = bucket[j];
-        return fingerprint;
-    }
+    inline fp_type getFingerprint(size_t i, size_t j);
 
-    size_t fingerprintCount(const size_t i) const {
-        size_t count = 0;
-        for (size_t j = 0; j < entries_per_bucket; ++j) {
-            if (getFingerprint(i, j) != 0) {
-                count++;
-            }
-        }
-        return count;
-    }
+    size_t fingerprintCount(size_t i) const;
 
-    inline void insertFingerprint(const size_t i, const size_t j, const fp_type fp) {
-        fp_type *bucket = buckets[i].data;
-        bucket[j] = fp;
-    }
+    inline void insertFingerprint(size_t i, size_t j, fp_type fp);
 
-    inline bool replacingFingerprintInsertion(const size_t i, const fp_type fp,
-                                              const bool eject, fp_type &prev_fp) {
-        for (size_t j = 0; j < entries_per_bucket; ++j) {
-            if (getFingerprint(i, j) == 0) {
-                insertFingerprint(i, j, fp);
-                return true;
-            }
-        }
+    inline bool replacingFingerprintInsertion(size_t i, fp_type fp, bool eject, fp_type &prev_fp);
 
-        if (eject) {
-            size_t next = rand() % entries_per_bucket;
-            prev_fp = getFingerprint(i, next);
-        }
-        return false;
-    }
+    bool containsFingerprint(size_t i, fp_type fp);
 
-    bool containsFingerprint(const size_t i, const fp_type fp) {
-        for (size_t j = 0; j < entries_per_bucket; ++j) {
-            if (getFingerprint(i, j) == fp) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool deleteFingerprint(const size_t i, const fp_type fp) {
-        for (size_t j = 0; j < entries_per_bucket; ++j) {
-            if (getFingerprint(i, j) == fp) {
-                insertFingerprint(i, j, 0);
-                return true;
-            }
-        }
-        return false;
-    }
-
+    bool deleteFingerprint(size_t i, fp_type fp);
 };
 
 
