@@ -1,8 +1,9 @@
 # CuckooFilter
 Implementation of cuckoo filter.
 
+GitHub implementation: [CityHash](https://github.com/google/cityhash)
 
-Installation of cityhash lib provided by their authors:
+Installation of CityHash lib provided by their authors:
    > On systems with gcc, we generally recommend:
 
     ./configure
