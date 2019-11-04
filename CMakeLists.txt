@@ -3,4 +3,4 @@ project(CuckooFilter)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(CuckooTest CuckooTable.cpp CuckooTable.h CuckooFilter.cpp CuckooFilter.h CuckooHash.cpp CuckooHash.h)
+add_executable(CuckooFilter CuckooTable.cpp CuckooTable.h CuckooFilter.cpp CuckooFilter.h CuckooHash.cpp CuckooHash.h CityHash.cc)
