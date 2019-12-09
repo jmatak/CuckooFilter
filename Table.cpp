@@ -99,10 +99,8 @@ size_t CuckooTable<bits_per_fp, fp_type>::fingerprintCount(const size_t i) const
 template<size_t bits_per_fp, typename fp_type>
 void CuckooTable<bits_per_fp, fp_type>::insertFingerprint(const size_t i, const size_t j, const uint32_t fp) {
     const uint8_t *bucket = buckets[i].data;
-    // extracted fingerprint
     uint32_t efp = fp & fp_mask;
-    // TODO: this is only for 8 bits per fingerprint, extend to other settings -> add write method to bit manager
-    ((uint8_t *)bucket)[j] = efp;
+    bit_manager->write(j, bucket, efp);
 }
 
 template<size_t bits_per_fp, typename fp_type>

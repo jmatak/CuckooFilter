@@ -8,6 +8,7 @@ class BitManager {
 public:
     virtual bool hasvalue(uint64_t value, uint32_t fp) = 0;
     virtual uint32_t read(size_t pos, const uint8_t *p) = 0;
+    virtual void write(size_t pos, const uint8_t *p, uint32_t fp) = 0;
 };
 
 
@@ -22,6 +23,17 @@ public:
     inline uint32_t read(size_t pos, const uint8_t *p) {
         p += (pos >> 1);
         return *((fp_type*)p) >> ((pos & 1) << 2);
+    }
+    inline virtual void write(size_t pos, const uint8_t *p, uint32_t fp) {
+        p += (pos >> 1);
+        if ((pos & 1) == 0) {
+            *((fp_type *)p) &= 0xf0;
+            *((fp_type *)p) |= fp;
+        }
+        else {
+            *((fp_type *)p) &= 0x0f;
+            *((fp_type *)p) |= (fp << 4);
+        }
     }
 };
 
@@ -39,6 +51,9 @@ public:
         fp_type bits = *((fp_type*)p);
         return bits;
     }
+    inline virtual void write(size_t pos, const uint8_t *p, uint32_t fp) {
+        ((fp_type *)p)[pos] = fp;
+    }
 };
 
 // entries_per_bucket = 4, bits_per_element = 12
@@ -52,6 +67,16 @@ public:
     inline uint32_t read(size_t pos, const uint8_t *p) {
         p += pos + (pos>>1);
         return *((fp_type*)p) >> ((pos & 1) << 2);
+    }
+    inline virtual void write(size_t pos, const uint8_t *p, uint32_t fp) {
+        p += (pos + (pos >> 1));
+        if ((pos & 1) == 0) {
+            ((uint16_t *)p)[0] &= 0xf000;
+            ((fp_type *)p)[0] |= fp;
+        } else {
+            ((fp_type *)p)[0] &= 0x000f;
+            ((fp_type *)p)[0] |= (fp << 4);
+        }
     }
 };
 
@@ -68,6 +93,9 @@ public:
         fp_type bits = *((fp_type*)p);
         return bits;
     }
+    inline virtual void write(size_t pos, const uint8_t *p, uint32_t fp) {
+        ((fp_type *)p)[pos] = fp;
+    }
 };
 
 // entries_per_bucket = 2, bits_per_element = 32
@@ -82,6 +110,9 @@ public:
         p += (pos << 2);
         fp_type bits = *((fp_type*)p);
         return bits;
+    }
+    inline virtual void write(size_t pos, const uint8_t *p, uint32_t fp) {
+        ((fp_type *)p)[pos] = fp;
     }
 };
 

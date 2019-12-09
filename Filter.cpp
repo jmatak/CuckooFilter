@@ -104,6 +104,7 @@ public:
         size_t i1, i2;
 
         firstPass(element, &fp, &i1);
+        // TODO: this could be calculated only if necessary
         i2 = indexComplement(i1, fp);
 
         if (table->deleteFingerprint(fp, i1) || table->deleteFingerprint(fp, i2)) {
