@@ -10,9 +10,9 @@ class CuckooTable {
 
     static const size_t entries_per_bucket = 4;
     static const size_t bytes_per_bucket = (entries_per_bucket * bits_per_fp) / 8;
-    static const uint32_t fp_mask = (1ULL << bits_per_fp) - 1;
 
     struct Bucket {
+        // TODO: possibly change to uint8_t*
         uint8_t data[bytes_per_bucket];
     };
 
@@ -22,6 +22,7 @@ private:
     Bucket *buckets;
 
 public:
+    static const uint32_t fp_mask = (1ULL << bits_per_fp) - 1;
     CuckooTable(size_t table_size);
     ~CuckooTable();
     size_t getTableSize() const;

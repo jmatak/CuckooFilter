@@ -4,6 +4,7 @@
 #define kicks_max_count 500
 
 static size_t highestPowerOfTwo(uint32_t v) {
+    v--;
     v |= v >> 1;
     v |= v >> 2;
     v |= v >> 4;
@@ -17,23 +18,21 @@ static size_t highestPowerOfTwo(uint32_t v) {
 template<typename element_type, size_t bits_per_fp = 8, typename HashFunction = MultiplyShift>
 class CuckooFilter {
 
-    // TODO: fp_mask -> already defined in cuckoo table, fix imports
-    static const uint32_t fp_mask = (1ULL << bits_per_fp) - 1;
+    static const uint32_t fp_mask = CuckooTable<>::fp_mask;
 
-    typedef struct {
-        bool set;
+    struct Victim {
+        uint32_t fp = 0;
         size_t index;
-        uint32_t fp;
-    } TargetCache;
+    };
+
 
 private:
     uint32_t fingerprintFunction(element_type element);
 
     CuckooTable<bits_per_fp> *table;
     size_t element_count;
-
     HashFunction hash_function;
-    TargetCache cache;
+    Victim victim;
 
     inline size_t getIndex(uint32_t hv) const {
         // equivalent to modulo when number of buckets is a power of two
@@ -77,18 +76,16 @@ private:
             curr_index = indexComplement(curr_index, curr_fp);
         }
 
-        cache.set = true;
-        cache.index = curr_index;
-        cache.fp = curr_fp;
+        victim.index = curr_index;
+        victim.fp = curr_fp;
         return true;
     }
 
 
 
 public:
-    explicit CuckooFilter(uint32_t max_table_size) : element_count(0), hash_function(), cache() {
+    explicit CuckooFilter(uint32_t max_table_size) : element_count(0), hash_function(), victim() {
         size_t table_size = highestPowerOfTwo(max_table_size);
-        cache.set = false;
         table = new CuckooTable<bits_per_fp>(table_size);
     }
 
@@ -96,8 +93,7 @@ public:
         size_t index;
         uint32_t fp;
 
-        // check cache
-        if (cache.set) return false;
+        if (victim.fp) return false;
 
         firstPass(element, &fp, &index);
         return this->insert(fp, index);
@@ -113,20 +109,20 @@ public:
         if (table->deleteFingerprint(fp, i1) || table->deleteFingerprint(fp, i2)) {
             this->element_count--;
         }
-        else if (cache.set && fp == cache.fp &&
-                 (i1 == cache.index || i2 == cache.index)) {
+        else if (victim.fp && fp == victim.fp &&
+                 (i1 == victim.index || i2 == victim.index)) {
             // element count -> upon agreement
-            cache.set = false;
+            victim.fp = 0;
             return true;
         }
         else {
             return false;
         }
 
-        if (cache.set) {
-            cache.set = false;
-            size_t index = cache.index;
-            uint32_t fp =  cache.fp;
+        if (victim.fp) {
+            size_t index = victim.index;
+            uint32_t fp =  victim.fp;
+            victim.fp = 0;
             // element count -> upon agreement
             this->insert(fp, index);
         }
@@ -137,7 +133,6 @@ public:
     bool containsElement(element_type &element) {
         uint32_t fp;
         size_t i1, i2;
-        bool match;
 
         firstPass(element, &fp, &i1);
         i2 = indexComplement(i1, fp);
@@ -145,7 +140,7 @@ public:
         // TODO: remove after debugging
         assert(i1 == indexComplement(i2, fp));
 
-        match = cache.set && (fp == cache.fp) && (i1 == cache.index || i2 == cache.index);
+        bool match = victim.fp && (fp == victim.fp) && (i1 == victim.index || i2 == victim.index);
         return match || table->containsFingerprint(i1, i2, fp);
     }
 
@@ -178,6 +173,5 @@ int main() {
     }
 
     cout << filter.deleteElement(2);
-
     return 0;
 }
