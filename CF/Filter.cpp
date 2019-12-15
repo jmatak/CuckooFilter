@@ -15,23 +15,22 @@ static size_t highestPowerOfTwo(uint32_t v) {
     return v;
 }
 
-template<typename element_type, size_t bits_per_fp = 8, typename HashFunction = MultiplyShift>
+
+struct Victim {
+    uint32_t fp;
+    size_t index;
+};
+
+
+template<typename element_type, typename fp_type = uint8_t>
 class CuckooFilter {
-
-    static const uint32_t fp_mask = CuckooTable<>::fp_mask;
-
-    struct Victim {
-        uint32_t fp = 0;
-        size_t index;
-    };
 
 
 private:
-    uint32_t fingerprintFunction(element_type element);
-
-    CuckooTable<bits_per_fp> *table;
+    uint32_t fp_mask;
+    CuckooTable<fp_type>* table;
     size_t element_count;
-    HashFunction hash_function;
+    HashFunction<element_type>* hash_function;
     Victim victim;
 
     inline size_t getIndex(uint32_t hv) const {
@@ -48,7 +47,7 @@ private:
     }
 
     inline void firstPass(const element_type &item, uint32_t *fp, size_t *index) const {
-        const u_int32_t hash_value = hash_function(item);
+        const u_int32_t hash_value = hash_function->hash(item);
         *index = getIndex(hash_value);
         *fp = fingerprint(hash_value);
     }
@@ -84,9 +83,22 @@ private:
 
 
 public:
-    explicit CuckooFilter(uint32_t max_table_size) : element_count(0), hash_function(), victim() {
+    explicit CuckooFilter(uint32_t max_table_size, size_t bits_per_fp = 8, size_t entries_per_bucket = 4) {
+        element_count = 0;
+        victim = {0, 0};
+        this->fp_mask = (1ULL << bits_per_fp) - 1;
         size_t table_size = highestPowerOfTwo(max_table_size);
-        table = new CuckooTable<bits_per_fp>(table_size);
+        table = new CuckooTable<fp_type>(table_size, bits_per_fp, entries_per_bucket, fp_mask);
+
+        if (std::is_same<element_type, uint32_t>::value) {
+            hash_function = new MultiplyShift();
+        }
+        else if (false) {
+            // TODO: for other types
+        }
+        else {
+            // TODO print error, throw exception
+        }
     }
 
     bool insertElement(element_type &element) {
@@ -147,6 +159,7 @@ public:
 
     ~CuckooFilter() {
         delete table;
+        delete hash_function;
     }
 };
 
@@ -159,16 +172,16 @@ using namespace std;
 
 int main() {
     size_t total_items = 64;
-    CuckooFilter<size_t> filter(total_items);
+    CuckooFilter<uint32_t> filter(total_items);
 
-    size_t num_inserted = 0;
-    for (size_t i = 0; i < 64; i++, num_inserted++) {
+    uint32_t num_inserted = 0;
+    for (uint32_t i = 0; i < 64; i++, num_inserted++) {
         if (!filter.insertElement(i)) {
             break;
         }
     }
 
-    for (size_t i = 0; i < num_inserted; i++) {
+    for (uint32_t i = 0; i < num_inserted; i++) {
         printf("%lu\n", i);
         assert(filter.containsElement(i));
     }
