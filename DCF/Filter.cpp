@@ -7,7 +7,7 @@ struct Victim {
     uint32_t fp;
 };
 
-
+// TODO: remove class CuckooTable and transfer its utilities over here; maybe a bit faster, but ugly code
 template<typename element_type, typename fp_type>
 class CuckooFilter {
 

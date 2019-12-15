@@ -29,7 +29,6 @@ private:
     size_t element_count;
     size_t cf_count;
 
-    int cf_capacity;
     int cf_table_size;
 
     Victim victim;
@@ -70,10 +69,7 @@ public:
         this->entries_per_bucket = entries_per_bucket;
 
         cf_table_size = highestPowerOfTwo(max_table_size);
-        // TODO: decide on capacity
-        cf_capacity = size_t(0.9 * cf_table_size);
 
-        // TODO: init BitManager, shared for all CFs
         if (entries_per_bucket == 4 && bits_per_fp == 4 && std::is_same<fp_type, uint8_t>::value) {
             bit_manager = new BitManager4<fp_type>();
         }
@@ -237,6 +233,7 @@ public:
     }
 
 
+    // TODO: test this method
     void compact(){
         int sparse_cf_count = 0;
         CuckooFilter<element_type, fp_type>* cf = head_cf;
