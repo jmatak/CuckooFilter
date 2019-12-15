@@ -78,13 +78,19 @@ public:
     }
 
     ~DynamicCuckooFilter() {
-        // TODO: delete all CFs
+        CuckooFilter<element_type>* cf = head_cf;
+        CuckooFilter<element_type>* temp;
+        while (cf) {
+            temp = cf->next;
+            delete cf;
+            cf = temp;
+        }
     }
 
     CuckooFilter<element_type>* nextCF(CuckooFilter<element_type>* cf) {
         CuckooFilter<element_type>* next_cf;
 
-        // TODO: rewrite tail recursion as a loop
+        // TODO: rewrite tail recursion as a loop, test this function
         if(cf == tail_cf) {
             next_cf = new CuckooTable<bits_per_fp>(cf_table_size);
             active_cf->next = next_cf;
@@ -101,6 +107,16 @@ public:
         return next_cf;
     }
 
+
+    void storeVictim(Victim &victim) {
+        CuckooFilter<element_type>* cf = nextCF(head_cf);
+        if (!cf->insertElement(victim.index, victim.fp, victim)){
+            cf = getNextCF(cf);
+            storeVictim(victim);
+        }
+    }
+
+
     bool insertElement(const element_type &element) {
         size_t index;
         uint32_t fp;
@@ -111,22 +127,15 @@ public:
             active_cf = nextCF(active_cf);
         }
 
-        // TODO: insert with victim
-        if (active_cf->insert(index, fp)) {
+        if (active_cf->insert(index, fp, victim)) {
             this->element_count++;
         }
-        else{
-            failureHandle(victim);
+        else {
+            storeVictim(victim);
             this->element_count++;
         }
 
         return true;
-    }
-
-
-    bool failureHandle(Victim &victim) {
-        // TODO: implementation
-        return false;
     }
 
 
@@ -154,15 +163,14 @@ public:
         uint32_t fp;
 
         firstPass(element, &fp, &i1);
+        i2 = indexComplement(i1, fp);
 
         CuckooFilter<element_type>* cf = head_cf;
         while (cf) {
-            // TODO: calculate second index only if necessary, containsElement always calculates i2 again
-            if (cf->containsElement(fp, i1)){
-                if(cf->deleteElement(fp, i1)){
-                    element_count--;
-                    return true;
-                }
+            // TODO: what is faster: del(fp, i1, i2) or (del(fp, i1) || del(fp, i2))
+            if (cf->deleteElement(fp, i1, i2)){
+                this->element_count--;
+                return true;
             }
             else{
                 cf = cf->next;
@@ -237,3 +245,31 @@ public:
 
 
 };
+
+
+
+/*
+#include <iostream>
+#include <assert.h>
+
+using namespace std;
+
+int main() {
+    size_t total_items = 64;
+    CuckooFilter<size_t> filter(total_items);
+
+    size_t num_inserted = 0;
+    for (size_t i = 0; i < 64; i++, num_inserted++) {
+        if (!filter.insertElement(i)) {
+            break;
+        }
+    }
+
+    for (size_t i = 0; i < num_inserted; i++) {
+        printf("%lu\n", i);
+        assert(filter.containsElement(i));
+    }
+
+    cout << filter.deleteElement(2);
+    return 0;
+}*/

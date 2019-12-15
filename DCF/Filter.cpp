@@ -22,7 +22,6 @@ private:
 
     CuckooTable<bits_per_fp>* table;
     HashFunction hash_function;
-    Victim victim;
 
     size_t capacity;
 
@@ -62,13 +61,13 @@ public:
 
     size_t element_count;
 
-    explicit CuckooFilter(uint32_t table_size) : element_count(0), hash_function(), victim() {
-        // TODO: decide on capacity
+    explicit CuckooFilter(uint32_t table_size) : element_count(0), hash_function() {
+        // TODO: capacity?
         capacity = size_t(0.9 * table_size);
         table = new CuckooTable<bits_per_fp>(table_size);
     }
 
-    bool insertElement(uint32_t fp, size_t index) {
+    bool insertElement(uint32_t fp, size_t index, Victim &victim) {
         size_t curr_index = index;
         uint32_t curr_fp = fp;
         uint32_t prev_fp;
@@ -88,103 +87,35 @@ public:
 
         victim.index = curr_index;
         victim.fp = curr_fp;
-        return true;
-    }
-
-    bool insertElement(const element_type &element) {
-        size_t index;
-        uint32_t fp;
-
-        if (victim.fp) return false;
-
-        firstPass(element, &fp, &index);
-        return this->insertElement(fp, index);
+        return false;
     }
 
 
     bool deleteElement(uint32_t fp, size_t i1) {
-        // TODO: this could be calculated only if necessary
-        size_t i2 = indexComplement(i1, fp);
-
-        if (table->deleteFingerprint(fp, i1) || table->deleteFingerprint(fp, i2)) {
-            this->element_count--;
-        }
-        else if (victim.fp && fp == victim.fp &&
-                 (i1 == victim.index || i2 == victim.index)) {
-            // element count -> upon agreement
-            victim.fp = 0;
-            return true;
-        }
-        else {
-            return false;
-        }
-
-        if (victim.fp) {
-            size_t index = victim.index;
-            uint32_t fp =  victim.fp;
-            victim.fp = 0;
-            // element count -> upon agreement
-            this->insertElement(fp, index);
-        }
-
-        return true;
+        return
+            table->deleteFingerprint(fp, i1)
+            ||
+            table->deleteFingerprint(fp, indexComplement(i1, fp));
     }
 
-    bool deleteElement(const element_type &element) {
-        uint32_t fp;
-        size_t i1, i2;
-
-        firstPass(element, &fp, &i1);
-        // TODO: this could be calculated only if necessary
-        i2 = indexComplement(i1, fp);
-
-        if (table->deleteFingerprint(fp, i1) || table->deleteFingerprint(fp, i2)) {
-            this->element_count--;
-        }
-        else if (victim.fp && fp == victim.fp &&
-                 (i1 == victim.index || i2 == victim.index)) {
-            // element count -> upon agreement
-            victim.fp = 0;
-            return true;
-        }
-        else {
-            return false;
-        }
-
-        if (victim.fp) {
-            size_t index = victim.index;
-            uint32_t fp =  victim.fp;
-            victim.fp = 0;
-            // element count -> upon agreement
-            this->insertElement(fp, index);
-        }
-
-        return true;
+    bool deleteElement(uint32_t fp, size_t i1, size_t i2) {
+        return
+                table->deleteFingerprint(fp, i1)
+                ||
+                table->deleteFingerprint(fp, i2);
     }
+
 
     bool containsElement(uint32_t fp, size_t i1) {
-
         size_t i2 = indexComplement(i1, fp);
-        // TODO: remove after debugging
-        assert(i1 == indexComplement(i2, fp));
-
-        bool match = victim.fp && (fp == victim.fp) && (i1 == victim.index || i2 == victim.index);
-        return match || table->containsFingerprint(i1, i2, fp);
+        return table->containsFingerprint(i1, i2, fp);
     }
 
-    bool containsElement(const element_type &element) {
-        uint32_t fp;
-        size_t i1, i2;
 
-        firstPass(element, &fp, &i1);
-        i2 = indexComplement(i1, fp);
-
-        // TODO: remove after debugging
-        assert(i1 == indexComplement(i2, fp));
-
-        bool match = victim.fp && (fp == victim.fp) && (i1 == victim.index || i2 == victim.index);
-        return match || table->containsFingerprint(i1, i2, fp);
+    bool containsElement(uint32_t fp, size_t i1, size_t i2) {
+        return table->containsFingerprint(i1, i2, fp);
     }
+
 
     void moveElements(CuckooFilter<element_type>* cf) {
         uint32_t fp;
@@ -222,30 +153,3 @@ public:
         delete table;
     }
 };
-
-
-
-#include <iostream>
-#include <assert.h>
-
-using namespace std;
-
-int main() {
-    size_t total_items = 64;
-    CuckooFilter<size_t> filter(total_items);
-
-    size_t num_inserted = 0;
-    for (size_t i = 0; i < 64; i++, num_inserted++) {
-        if (!filter.insertElement(i)) {
-            break;
-        }
-    }
-
-    for (size_t i = 0; i < num_inserted; i++) {
-        printf("%lu\n", i);
-        assert(filter.containsElement(i));
-    }
-
-    cout << filter.deleteElement(2);
-    return 0;
-}

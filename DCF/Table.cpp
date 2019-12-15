@@ -34,7 +34,8 @@ public:
     inline bool replacingFingerprintInsertion(size_t i, uint32_t fp, bool eject, uint32_t &prev_fp);
     bool containsFingerprint(size_t i, uint32_t fp);
     bool containsFingerprint(size_t i1, size_t i2, uint32_t fp);
-    bool deleteFingerprint(uint32_t fp, size_t i);
+    bool deleteFingerprint(const uint32_t fp, const size_t i);
+    bool deleteFingerprint(const uint32_t fp, const size_t i1, const size_t i2);
 };
 
 
@@ -132,13 +133,13 @@ bool CuckooTable<bits_per_fp, fp_type>::containsFingerprint(const size_t i, cons
 
 template<size_t bits_per_fp, typename fp_type>
 bool CuckooTable<bits_per_fp, fp_type>::containsFingerprint(const size_t i1, const size_t i2, const uint32_t fp) {
-    const uint8_t *b1 = buckets[i1].data;
-    const uint8_t *b2 = buckets[i2].data;
+    return
+            bit_manager->hasvalue(
+                    *((uint64_t *)buckets[i1].data), fp)
+            ||
+            bit_manager->hasvalue(
+                    *((uint64_t *)buckets[i2].data), fp);
 
-    uint64_t val1 = *((uint64_t *)b1);
-    uint64_t val2 = *((uint64_t *)b2);
-
-    return bit_manager->hasvalue(val1, fp) || bit_manager->hasvalue(val2, fp);
 }
 
 template<size_t bits_per_fp, typename fp_type>
@@ -146,6 +147,22 @@ bool CuckooTable<bits_per_fp, fp_type>::deleteFingerprint(const uint32_t fp, con
     for (size_t j = 0; j < entries_per_bucket; j++) {
         if (getFingerprint(i, j) == fp) {
             insertFingerprint(i, j, 0);
+            return true;
+        }
+    }
+    return false;
+}
+
+
+template<size_t bits_per_fp, typename fp_type>
+bool CuckooTable<bits_per_fp, fp_type>::deleteFingerprint(const uint32_t fp, const size_t i1, const size_t i2) {
+    for (size_t j = 0; j < entries_per_bucket; j++) {
+        if (getFingerprint(i1, j) == fp) {
+            insertFingerprint(i1, j, 0);
+            return true;
+        }
+        if (getFingerprint(i2, j) == fp) {
+            insertFingerprint(i2, j, 0);
             return true;
         }
     }
