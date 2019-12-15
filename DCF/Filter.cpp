@@ -1,47 +1,23 @@
-#include "hash.cpp"
 #include "Table.cpp"
 
 #define kicks_max_count 500
 
-
 struct Victim {
-    uint32_t fp = 0;
     size_t index;
+    uint32_t fp;
 };
 
 
-// TODO: bits_per_fp -> put in ctor
-template<typename element_type, size_t bits_per_fp = 8, typename HashFunction = MultiplyShift>
+template<typename element_type, typename fp_type>
 class CuckooFilter {
 
-    static const uint32_t fp_mask = CuckooTable<bits_per_fp>::fp_mask;
-
 private:
-    uint32_t fingerprintFunction(element_type element);
-
-
-    CuckooTable<bits_per_fp>* table;
-    HashFunction hash_function;
-
+    CuckooTable<fp_type>* table;
     size_t capacity;
 
     inline size_t getIndex(uint32_t hv) const {
         // equivalent to modulo when number of buckets is a power of two
         return hv & (table->table_size - 1);
-    }
-
-    inline uint32_t fingerprint(uint32_t hash_value) const {
-        uint32_t fingerprint;
-        fingerprint = hash_value & fp_mask;
-        // make sure that fingerprint != 0
-        fingerprint += (fingerprint == 0);
-        return fingerprint;
-    }
-
-    inline void firstPass(const element_type &item, uint32_t *fp, size_t *index) const {
-        const u_int32_t hash_value = hash_function(item);
-        *index = getIndex(hash_value);
-        *fp = fingerprint(hash_value);
     }
 
     inline uint32_t indexComplement(const size_t index, const uint32_t fp) const {
@@ -50,21 +26,25 @@ private:
     }
 
 
-
 public:
 
-    CuckooFilter<element_type>* prev = NULL;
-    CuckooFilter<element_type>* next = NULL;
+    CuckooFilter<element_type, fp_type>* prev = NULL;
+    CuckooFilter<element_type, fp_type>* next = NULL;
 
     bool is_full = false;
     bool is_empty = true;
 
     size_t element_count;
 
-    explicit CuckooFilter(uint32_t table_size) : element_count(0), hash_function() {
+    explicit CuckooFilter(const uint32_t table_size,
+                          const BitManager<fp_type>* bit_manager,
+                          const size_t bits_per_fp,
+                          const uint32_t fp_mask,
+                          const size_t entries_per_bucket) {
         // TODO: capacity?
         capacity = size_t(0.9 * table_size);
-        table = new CuckooTable<bits_per_fp>(table_size);
+        element_count = 0;
+        table = new CuckooTable<fp_type>(table_size, bit_manager, bits_per_fp, fp_mask, entries_per_bucket);
     }
 
     bool insertElement(uint32_t fp, size_t index, Victim &victim) {
@@ -117,7 +97,7 @@ public:
     }
 
 
-    void moveElements(CuckooFilter<element_type>* cf) {
+    void moveElements(CuckooFilter<element_type, fp_type>* cf) {
         uint32_t fp;
 
         for(size_t i = 0; i < table->table_size; i++){

@@ -3,6 +3,7 @@
 
 // http://www-graphics.stanford.edu/~seander/bithacks.html
 
+// TODO: model each class as a template, not as a derived class -> this should solve fp_type problem
 template<typename fp_type>
 class BitManager {
 public:
