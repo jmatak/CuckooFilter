@@ -25,6 +25,26 @@ private:
         return getIndex(hv);
     }
 
+    inline void refreshOnDelete() {
+        this->element_count--;
+        if (this->element_count < this->capacity) {
+            this->is_full = false;
+        }
+        if (this->element_count == 0) {
+            this->is_empty = true;
+        }
+    }
+
+    inline void refreshOnInsert() {
+        this->element_count++;
+        if (this->element_count == this->capacity) {
+            this->is_full = true;
+        }
+        if (this->element_count > 0) {
+            this->is_empty = false;
+        }
+    }
+
 
 public:
 
@@ -36,11 +56,11 @@ public:
 
     size_t element_count;
 
-    explicit CuckooFilter(const uint32_t table_size,
-                          const BitManager<fp_type>* bit_manager,
-                          const size_t bits_per_fp,
-                          const uint32_t fp_mask,
-                          const size_t entries_per_bucket) {
+    explicit CuckooFilter(uint32_t table_size,
+                          BitManager<fp_type>* bit_manager,
+                          size_t bits_per_fp,
+                          uint32_t fp_mask,
+                          size_t entries_per_bucket) {
         // TODO: capacity?
         capacity = size_t(0.9 * table_size);
         element_count = 0;
@@ -56,7 +76,7 @@ public:
             bool eject = (kicks != 0);
             prev_fp = 0;
             if (table->replacingFingerprintInsertion(curr_index, curr_fp, eject, prev_fp)) {
-                this->element_count++;
+                this->refreshOnInsert();
                 return true;
             }
             if (eject) {
@@ -72,17 +92,30 @@ public:
 
 
     bool deleteElement(uint32_t fp, size_t i1) {
-        return
+        bool deletion =
             table->deleteFingerprint(fp, i1)
             ||
             table->deleteFingerprint(fp, indexComplement(i1, fp));
+
+        if (deletion) {
+            this->refreshOnDelete();
+        }
+
+        return deletion;
     }
 
     bool deleteElement(uint32_t fp, size_t i1, size_t i2) {
-        return
+        bool deletion =
                 table->deleteFingerprint(fp, i1)
                 ||
                 table->deleteFingerprint(fp, i2);
+
+        // TODO: redundant checking, send CF object to deleteFingerprint function
+        if (deletion) {
+            this->refreshOnDelete();
+        }
+
+        return deletion;
     }
 
 
@@ -97,32 +130,23 @@ public:
     }
 
 
+    bool replacementInsert(size_t i, size_t j, uint32_t fp) {
+        table->insertFingerprint(i, j, fp);
+    }
+
     void moveElements(CuckooFilter<element_type, fp_type>* cf) {
         uint32_t fp;
 
         for(size_t i = 0; i < table->table_size; i++){
             for(int j = 0; j < table->entries_per_bucket; j++){
                 fp = table->getFingerprint(i, j);
+
                 if(fp){
                     if(cf->is_full || this->is_empty) return;
-                    Victim victim = {0, 0};
-                    if(cf->insertElement(i, fp, false, victim)){
+                    if(cf->table->insertFingerprint(i, j, fp)){
                         table->insertFingerprint(i, j, 0);
-                        this->element_count--;
-
-                        if (this->element_count < this->capacity){
-                            this->is_full = false;
-                        }
-                        if (this->counter == 0){
-                            this->is_empty = true;
-                        }
-
-                        if (cf->counter == cf->capacity){
-                            cf->is_full = true;
-                        }
-                        if (cf->element_count > 0){
-                            cf->is_empty = false;
-                        }
+                        this->refreshOnDelete();
+                        cf->refreshOnInsert();
                     }
                 }
             }

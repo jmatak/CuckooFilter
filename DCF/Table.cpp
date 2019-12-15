@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <assert.h>
+#include <iostream>
 
 #include "BitManager.cpp"
 
@@ -14,10 +15,10 @@ template<typename fp_type>
 class CuckooTable {
 
 public:
-    const uint32_t fp_mask;
-    const size_t table_size;
+    size_t table_size;
+    uint32_t fp_mask;
 
-    CuckooTable(const size_t, const BitManager<fp_type>*, const size_t, const uint32_t, const size_t);
+    CuckooTable(size_t, BitManager<fp_type>*, size_t, uint32_t, size_t);
     ~CuckooTable();
     size_t getTableSize() const;
     size_t maxNoOfElements();
@@ -31,23 +32,23 @@ public:
     bool deleteFingerprint(const uint32_t, const size_t, const size_t);
 
 private:
-    const size_t bits_per_fp;
-    const size_t entries_per_bucket;
-    const size_t bytes_per_bucket;
+    size_t bits_per_fp;
+    size_t entries_per_bucket;
+    size_t bytes_per_bucket;
 
-    BitManager<fp_type> *bit_manager;
-    Bucket *buckets;
+    BitManager<fp_type>* bit_manager;
+    Bucket* buckets;
 };
 
 
 
 
 template<typename fp_type>
-CuckooTable<fp_type>::CuckooTable(const size_t table_size,
-                                  const BitManager<fp_type>* bit_manager,
-                                  const size_t bits_per_fp,
-                                  const uint32_t fp_mask,
-                                  const size_t entries_per_bucket) {
+CuckooTable<fp_type>::CuckooTable(size_t table_size,
+                                  BitManager<fp_type>* bit_manager,
+                                  size_t bits_per_fp,
+                                  uint32_t fp_mask,
+                                  size_t entries_per_bucket) {
 
     this->table_size = table_size;
     this->bit_manager = bit_manager;
@@ -58,7 +59,7 @@ CuckooTable<fp_type>::CuckooTable(const size_t table_size,
 
     buckets = new Bucket[table_size];
     for(size_t i = 0; i < table_size; i++){
-        buckets[i].data = new uint8_t[bytes_per_bucket];
+        buckets[i].data = new uint8_t[entries_per_bucket];
         memset(buckets[i].data, 0, bytes_per_bucket);
     }
     //memset(buckets, 0, CuckooTable::bytes_per_bucket * table_size); // set all bits to 0
@@ -67,7 +68,6 @@ CuckooTable<fp_type>::CuckooTable(const size_t table_size,
 template<typename fp_type>
 CuckooTable<fp_type>::~CuckooTable() {
     delete[] buckets;
-    delete bit_manager;
 }
 
 template<typename fp_type>
@@ -122,6 +122,7 @@ inline bool CuckooTable<fp_type>::replacingFingerprintInsertion(const size_t i, 
     }
     return false;
 }
+
 
 template<typename fp_type>
 bool CuckooTable<fp_type>::containsFingerprint(const size_t i, const uint32_t fp) {

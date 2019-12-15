@@ -15,16 +15,16 @@ static size_t highestPowerOfTwo(uint32_t v) {
 }
 
 
-template<typename element_type, typename fp_type>
+template<typename element_type = uint32_t, typename fp_type = uint8_t>
 class DynamicCuckooFilter{
 
 private:
-    HashFunction<element_type> hash_function;
+    HashFunction<element_type>* hash_function;
 
     BitManager<fp_type>* bit_manager;
-    const uint32_t fp_mask;
-    const size_t bits_per_fp;
-    const size_t entries_per_bucket;
+    uint32_t fp_mask;
+    size_t bits_per_fp;
+    size_t entries_per_bucket;
 
     size_t element_count;
     size_t cf_count;
@@ -52,7 +52,7 @@ private:
     }
 
     inline void firstPass(const element_type &item, uint32_t *fp, size_t *index) const {
-        const u_int32_t hash_value = hash_function(item);
+        const u_int32_t hash_value = hash_function->hash(item);
         *index = getIndex(hash_value);
         *fp = fingerprint(hash_value);
     }
@@ -64,7 +64,7 @@ private:
 
 public:
 
-    DynamicCuckooFilter(uint32_t max_table_size, size_t bits_per_fp, size_t entries_per_bucket = 4) {
+    DynamicCuckooFilter(uint32_t max_table_size, size_t bits_per_fp = 8, size_t entries_per_bucket = 4) {
         this->bits_per_fp = bits_per_fp;
         this->fp_mask = (1ULL << bits_per_fp) - 1;
         this->entries_per_bucket = entries_per_bucket;
@@ -103,11 +103,11 @@ public:
             // TODO print error, throw exception
         }
 
-        active_cf = new CuckooFilter<element_type, fp_type>(cf_table_size,
-                                                            bit_manager,
-                                                            bits_per_fp,
-                                                            fp_mask,
-                                                            entries_per_bucket);
+        active_cf = new CuckooFilter<element_type, fp_type>(this->cf_table_size,
+                                                            this->bit_manager,
+                                                            this->bits_per_fp,
+                                                            this->fp_mask,
+                                                            this->entries_per_bucket);
         head_cf = tail_cf = active_cf;
         cf_count = 1;
         element_count = 0;
@@ -121,7 +121,9 @@ public:
             delete cf;
             cf = temp;
         }
+
         delete bit_manager;
+        delete hash_function;
     }
 
     CuckooFilter<element_type, fp_type>* nextCF(CuckooFilter<element_type, fp_type>* cf) {
@@ -151,8 +153,8 @@ public:
 
     void storeVictim(Victim &victim) {
         CuckooFilter<element_type, fp_type>* cf = nextCF(head_cf);
-        if (!cf->insertElement(victim.index, victim.fp, victim)){
-            cf = getNextCF(cf);
+        if (!cf->insertElement(victim.fp, victim.index, victim)){
+            cf = nextCF(cf);
             storeVictim(victim);
         }
     }
@@ -168,7 +170,7 @@ public:
             active_cf = nextCF(active_cf);
         }
 
-        if (active_cf->insert(index, fp, victim)) {
+        if (active_cf->insertElement(fp, index, victim)) {
             this->element_count++;
         }
         else {
@@ -189,7 +191,7 @@ public:
 
         CuckooFilter<element_type, fp_type>* cf = head_cf;
         while (cf) {
-            // TODO: calculate second index only if necessary, containsElement always calculates i2 again
+            // TODO: calculate second index only if necessary & only for the first cf
             if (cf->containsElement(fp, i1, i2)) {
                 return true;
             }
@@ -261,9 +263,10 @@ public:
         sort(cfq, sparse_cf_count);
         for (int i = 0; i < sparse_cf_count-1; i++) {
             for (int j = sparse_cf_count-1; j > i; j--) {
-                cfq[i]->move_elements(cfq[j]);
+                cfq[i]->moveElements(cfq[j]);
                 if (cfq[i]->is_empty) {
                     this->removeCF(cfq[i]);
+                    this->cf_count--;
                     break; // move to next cf
                 }
             }
@@ -292,15 +295,14 @@ public:
 
 
 
-/*
 #include <iostream>
 #include <assert.h>
 
 using namespace std;
 
 int main() {
-    size_t total_items = 64;
-    CuckooFilter<size_t> filter(total_items);
+    uint32_t total_items = 64;
+    DynamicCuckooFilter<> filter(total_items);
 
     size_t num_inserted = 0;
     for (size_t i = 0; i < 64; i++, num_inserted++) {
@@ -316,4 +318,4 @@ int main() {
 
     cout << filter.deleteElement(2);
     return 0;
-}*/
+}
