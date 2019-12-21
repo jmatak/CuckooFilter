@@ -6,6 +6,12 @@
 
 using namespace std;
 
+/**
+ * Default implementation of Iterator design pattern.
+ * https://refactoring.guru/design-patterns/iterator
+ *
+ * @tparam T Type of value returned from iterator.
+ */
 template<typename T>
 class Iterator {
 public:
@@ -16,6 +22,9 @@ public:
     virtual T next() = 0;
 };
 
+/**
+ *  Implementation of Iterator pattern  through FastaReader class. Returns string of k-mere.
+ */
 class FastaIterator : public Iterator<string> {
     FastaReader *reader;
 public:
