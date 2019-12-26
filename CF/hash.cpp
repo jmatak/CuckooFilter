@@ -1,19 +1,17 @@
 #include <random>
 
-template<typename element_type>
-class HashFunction {
-public:
-    virtual uint32_t hash(element_type key) const = 0;
-};
+#define A 54059
+#define B 76963
+#define FIRSTH 37
 
 // Martin Dietzfelbinger, "Universal hashing and k-wise independent random
 // variables via integer arithmetic without primes".
-class MultiplyShift : public HashFunction<uint32_t>{
+class HashFunction {
 private:
     uint32_t multiply_, add_;
 
 public:
-    MultiplyShift() {
+    HashFunction() {
         ::std::random_device random;
         for (auto v : {&multiply_, &add_}) {
             *v = random();
@@ -22,6 +20,16 @@ public:
 
     uint32_t hash(uint32_t key) const {
         return (add_ + multiply_ * static_cast<decltype(multiply_)>(key));
+    }
+
+    uint32_t hash(const std::string& key) const {
+        const char *s = key.c_str();
+        uint32_t h = FIRSTH;
+        while (*s) {
+            h = (h * A) ^ (s[0] * B);
+            s++;
+        }
+        return h;
     }
 };
 

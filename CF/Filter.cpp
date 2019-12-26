@@ -28,9 +28,9 @@ class CuckooFilter {
 
 private:
     uint32_t fp_mask;
-    CuckooTable<fp_type>* table;
+    CuckooTable<fp_type> *table;
     size_t element_count;
-    HashFunction<element_type>* hash_function;
+    HashFunction *hash_function;
     Victim victim;
 
     inline size_t getIndex(uint32_t hv) const {
@@ -81,7 +81,6 @@ private:
     }
 
 
-
 public:
     explicit CuckooFilter(uint32_t max_table_size, size_t bits_per_fp = 8, size_t entries_per_bucket = 4) {
         element_count = 0;
@@ -89,16 +88,7 @@ public:
         this->fp_mask = (1ULL << bits_per_fp) - 1;
         size_t table_size = highestPowerOfTwo(max_table_size);
         table = new CuckooTable<fp_type>(table_size, bits_per_fp, entries_per_bucket, fp_mask);
-
-        if (std::is_same<element_type, uint32_t>::value) {
-            hash_function = new MultiplyShift();
-        }
-        else if (false) {
-            // TODO: for other types
-        }
-        else {
-            // TODO print error, throw exception
-        }
+        hash_function = new HashFunction();
     }
 
     bool insertElement(element_type &element) {
@@ -121,20 +111,18 @@ public:
 
         if (table->deleteFingerprint(fp, i1) || table->deleteFingerprint(fp, i2)) {
             this->element_count--;
-        }
-        else if (victim.fp && fp == victim.fp &&
-                 (i1 == victim.index || i2 == victim.index)) {
+        } else if (victim.fp && fp == victim.fp &&
+                   (i1 == victim.index || i2 == victim.index)) {
             // element count -> upon agreement
             victim.fp = 0;
             return true;
-        }
-        else {
+        } else {
             return false;
         }
 
         if (victim.fp) {
             size_t index = victim.index;
-            uint32_t fp =  victim.fp;
+            uint32_t fp = victim.fp;
             victim.fp = 0;
             // element count -> upon agreement
             this->insert(fp, index);
@@ -165,27 +153,3 @@ public:
 
 
 
-#include <iostream>
-#include <assert.h>
-
-using namespace std;
-
-int main() {
-    size_t total_items = 64;
-    CuckooFilter<uint32_t> filter(total_items);
-
-    uint32_t num_inserted = 0;
-    for (uint32_t i = 0; i < 64; i++, num_inserted++) {
-        if (!filter.insertElement(i)) {
-            break;
-        }
-    }
-
-    for (uint32_t i = 0; i < num_inserted; i++) {
-        printf("%lu\n", i);
-        assert(filter.containsElement(i));
-    }
-
-    cout << filter.deleteElement(2);
-    return 0;
-}
