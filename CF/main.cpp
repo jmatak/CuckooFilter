@@ -1,16 +1,22 @@
 #include <iostream>
-#include <assert.h>
-#include "Filter.cpp"
+#include "CuckooFilter.h"
 #include "../FASTA/FastaReader.h"
 #include "../FASTA/FastaIterator.h"
+#include "../ArgParser/cxxopts.hpp"
 
 using namespace std;
 
-int main() {
-    string fileName = "FULL_PATH";
-    int kmers = 10;
-    size_t total_items = 1024;
+int main(int argc, char **argv) {
+    cxxopts::Options options("CuckooFilter", "Testing example for CF");
+    options.add_options()
+            ("f,file", "FASTA formatted file", cxxopts::value<std::string>())
+            ("k,kmer_size", "K-mers size", cxxopts::value<int>()->default_value("10"))
+            ("s,filter_size", "Filter size", cxxopts::value<int>()->default_value("1024"));
+    auto result = options.parse(argc, argv);
 
+    string fileName = result["file"].as<string>();
+    int kmers = result["kmer_size"].as<int>();
+    size_t total_items = result["filter_size"].as<int>();;
 
     CuckooFilter<string> filter(total_items);
     FastaReader reader(fileName, kmers);
