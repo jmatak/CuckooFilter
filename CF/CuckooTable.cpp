@@ -1,4 +1,6 @@
 #include <stdexcept>
+#include <iomanip>
+#include <iostream>
 #include "CuckooTable.h"
 
 
@@ -124,6 +126,31 @@ bool CuckooTable<fp_type>::deleteFingerprint(const uint32_t fp, const size_t i) 
         }
     }
     return false;
+}
+
+template<typename fp_type>
+size_t CuckooTable<fp_type>::freeEntries() {
+    size_t free = 0;
+    for (size_t i = 0; i < table_size; ++i) {
+        for (size_t j = 0; j < entries_per_bucket; ++j) {
+            if (getFingerprint(i, j) == 0) {
+                free++;
+            }
+        }
+    }
+    return free;
+}
+
+template<typename fp_type>
+void CuckooTable<fp_type>::printTable() {
+    for (int i = 0; i < table_size; ++i) {
+        for (int j = 0; j < entries_per_bucket; ++j) {
+            auto bucket = buckets[i].data;
+            uint32_t fp = bit_manager->read(j, bucket);
+            std::cout << std::setfill('0') << std::setw(8) << std::hex << fp << " ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 template

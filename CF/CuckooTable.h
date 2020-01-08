@@ -41,6 +41,10 @@ public:
 
     size_t fingerprintCount(size_t i);
 
+    size_t freeEntries();
+
+    void printTable();
+
     void insertFingerprint(size_t i, size_t j, uint32_t fp);
 
     bool replacingFingerprintInsertion(size_t i, uint32_t fp, bool eject, uint32_t &prev_fp);

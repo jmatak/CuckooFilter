@@ -44,9 +44,11 @@ private:
     bool insert(uint32_t fp, size_t index);
 
 public:
-    explicit CuckooFilter(uint32_t max_table_size, size_t bits_per_fp = 8, size_t entries_per_bucket = 4);
+    CuckooFilter(uint32_t max_table_size, size_t bits_per_fp = 8, size_t entries_per_bucket = 4);
 
     ~CuckooFilter();
+
+    void print();
 
     bool insertElement(element_type &element);
 
@@ -54,6 +56,7 @@ public:
 
     bool containsElement(element_type &element);
 
+    double availability();
 };
 
 

@@ -11,7 +11,7 @@
 
 int main(int argc, char **argv) {
     size_t total_items = 100000;
-    CuckooFilter<size_t, uint16_t> filter(total_items, 12, 4);
+    CuckooFilter<size_t, uint16_t> filter(total_items, 16, 4);
 
     //  inserting items to the cuckoo filter
     size_t num_inserted = 0;
@@ -35,6 +35,11 @@ int main(int argc, char **argv) {
         total_queries++;
     }
 
+
+    filter.print();
+
+    std::cout << "availability: "
+              << filter.availability() * 100 << "%\n";
 
     std::cout << "false positive rate is "
               << 100.0 * false_queries / total_queries << "%\n";

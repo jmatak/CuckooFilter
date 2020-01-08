@@ -124,9 +124,30 @@ bool CuckooFilter<element_type, fp_type>::containsElement(element_type &element)
 
 
 template<typename element_type, typename fp_type>
+void CuckooFilter<element_type, fp_type>::print() {
+    table->printTable();
+}
+
+
+template<typename element_type, typename fp_type>
 CuckooFilter<element_type, fp_type>::~CuckooFilter() {
     delete table;
     delete hash_function;
+}
+
+/**
+ *
+ * @tparam element_type
+ * @tparam fp_type
+ * @return ratio of free to total number of entries
+ */
+
+template<typename element_type, typename fp_type>
+double CuckooFilter<element_type, fp_type>::availability() {
+    size_t free = this->table->freeEntries();
+    size_t ts = this->table->maxNoOfElements();
+
+    return ((double) free) / ((double) ts);
 }
 
 template
