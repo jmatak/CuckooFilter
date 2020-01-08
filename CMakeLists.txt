@@ -12,12 +12,13 @@ add_executable(CuckooFilter
         CF/CuckooTable.h
         CF/HashFunction.cpp
         CF/HashFunction.h
-        CF/main.cpp
 
-        FASTA/FastaIterator.cpp
-        FASTA/FastaIterator.h
-        FASTA/FastaReader.cpp
         FASTA/FastaReader.h
+        FASTA/FastaReader.cpp
+        FASTA/FastaIterator.h
+        FASTA/FastaIterator.cpp
 
         ArgParser/cxxopts.hpp
+        Tests/SimpleTest.cpp
+#        CF/main.cpp
         )

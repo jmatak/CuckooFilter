@@ -122,6 +122,7 @@ bool CuckooFilter<element_type, fp_type>::containsElement(element_type &element)
     return match || table->containsFingerprint(i1, i2, fp);
 }
 
+
 template<typename element_type, typename fp_type>
 CuckooFilter<element_type, fp_type>::~CuckooFilter() {
     delete table;
@@ -130,3 +131,6 @@ CuckooFilter<element_type, fp_type>::~CuckooFilter() {
 
 template
 class CuckooFilter<std::string>;
+
+template
+class CuckooFilter<std::size_t, std::uint16_t>;

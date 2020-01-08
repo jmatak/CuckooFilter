@@ -30,6 +30,7 @@ CuckooTable<fp_type>::CuckooTable(const size_t table_size, size_t bits_per_fp,
     } else {
         throw std::runtime_error("Bits per fingerprint should be in {4, 8, 12, 16, 32}");
     }
+
 }
 
 template<typename fp_type>
@@ -56,7 +57,7 @@ inline uint32_t CuckooTable<fp_type>::getFingerprint(const size_t i, const size_
 }
 
 template<typename fp_type>
-size_t CuckooTable<fp_type>::fingerprintCount(const size_t i)  {
+size_t CuckooTable<fp_type>::fingerprintCount(const size_t i) {
     size_t count = 0;
     for (size_t j = 0; j < entries_per_bucket; j++) {
         if (getFingerprint(i, j) != 0) {
@@ -107,7 +108,11 @@ bool CuckooTable<fp_type>::containsFingerprint(const size_t i1, const size_t i2,
     uint64_t val1 = *((uint64_t *) b1);
     uint64_t val2 = *((uint64_t *) b2);
 
-    return bit_manager->hasvalue(val1, fp) || bit_manager->hasvalue(val2, fp);
+    bool h1 = bit_manager->hasvalue(val1, fp);
+    bool h2 = bit_manager->hasvalue(val2, fp);
+
+    return h1 || h2;
+//    return bit_manager->hasvalue(val1, fp) || bit_manager->hasvalue(val2, fp);
 }
 
 template<typename fp_type>
@@ -121,7 +126,14 @@ bool CuckooTable<fp_type>::deleteFingerprint(const uint32_t fp, const size_t i) 
     return false;
 }
 
-template class CuckooTable<uint8_t>;
-template class CuckooTable<uint16_t >;
-template class CuckooTable<uint32_t >;
-template class CuckooTable<uint64_t >;
+template
+class CuckooTable<uint8_t>;
+
+template
+class CuckooTable<uint16_t>;
+
+template
+class CuckooTable<uint32_t>;
+
+template
+class CuckooTable<uint64_t>;
