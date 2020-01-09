@@ -21,7 +21,11 @@ public:
 
     uint32_t hash(uint32_t key) const;
 
+    uint32_t fingerprint(uint32_t key) const;
+
     uint32_t hash(std::string key) const;
+
+    uint32_t fingerprint(std::string key) const;
 
     static uint32_t cityHashFunction(uint32_t *buff, size_t len);
 

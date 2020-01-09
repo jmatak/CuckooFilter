@@ -1,5 +1,5 @@
 #include <iostream>
-#include "CuckooFilter.h"
+#include "../CF/CuckooFilter.h"
 #include "../FASTA/FastaReader.h"
 #include "../FASTA/FastaIterator.h"
 #include "../ArgParser/cxxopts.hpp"

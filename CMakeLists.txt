@@ -20,6 +20,6 @@ add_executable(CuckooFilter
         FASTA/FastaIterator.cpp
 
         ArgParser/cxxopts.hpp
-        Tests/SimpleTest.cpp
-#        CF/main.cpp
+#        Tests/SimpleTest.cpp
+        Tests/SimpleFastaTest.cpp
         )

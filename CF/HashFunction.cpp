@@ -29,3 +29,18 @@ uint32_t HashFunction::hash(uint32_t key) const {
 uint32_t HashFunction::hash(std::string key) const {
     return cityHashFunction(&key, (size_t) key.size());
 }
+
+
+uint32_t HashFunction::fingerprint(uint32_t key) const {
+    return (add_ + multiply_ * static_cast<decltype(multiply_)>(key));
+}
+
+uint32_t HashFunction::fingerprint(std::string key) const {
+    const char *s = key.c_str();
+    uint32_t h = FIRSTH;
+    while (*s) {
+        h = (h * HASH_A) ^ (s[0] * HASH_B);
+        s++;
+    }
+    return h;
+}
