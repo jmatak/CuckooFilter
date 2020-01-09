@@ -12,6 +12,7 @@ add_executable(CuckooFilter
         CF/CuckooTable.h
         CF/HashFunction.cpp
         CF/HashFunction.h
+        CF/CityHash.cpp
 
         FASTA/FastaReader.h
         FASTA/FastaReader.cpp

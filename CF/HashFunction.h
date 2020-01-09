@@ -3,6 +3,7 @@
 
 
 #include <random>
+#include "city.h"
 
 #define HASH_A 54059
 #define HASH_B 76963
@@ -20,7 +21,11 @@ public:
 
     uint32_t hash(uint32_t key) const;
 
-    uint32_t hash(const std::string &key) const;
+    uint32_t hash(std::string key) const;
+
+    static uint32_t cityHashFunction(uint32_t *buff, size_t len);
+
+    static uint32_t cityHashFunction(std::string *buff, size_t len);
 };
 
 
@@ -28,4 +33,4 @@ inline static uint32_t fingerprintComplement(const size_t index, const uint32_t 
     return index ^ (fp * MURMUR_CONST);
 }
 
-#endif //CUCKOOFILTER_HASHFUNCTION_H
+#endif

@@ -144,6 +144,7 @@ size_t CuckooTable<fp_type>::freeEntries() {
 template<typename fp_type>
 void CuckooTable<fp_type>::printTable() {
     for (int i = 0; i < table_size; ++i) {
+        std::cout << i << " | ";
         for (int j = 0; j < entries_per_bucket; ++j) {
             auto bucket = buckets[i].data;
             uint32_t fp = bit_manager->read(j, bucket);
