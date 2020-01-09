@@ -4,22 +4,28 @@ project(CuckooFilter)
 set(CMAKE_CXX_STANDARD 17)
 
 add_executable(CuckooFilter
-        CF/BitManager.cpp
-        CF/BitManager.h
-        CF/CuckooFilter.cpp
-        CF/CuckooFilter.h
-        CF/CuckooTable.cpp
-        CF/CuckooTable.h
-        CF/HashFunction.cpp
-        CF/HashFunction.h
-        CF/CityHash.cpp
+        DCF/BitManager.cpp
+        DCF/BitManager.h
+        DCF/CuckooFilter.cpp
+        DCF/CuckooFilter.h
+        DCF/CuckooTable.cpp
+        DCF/CuckooTable.h
+        DCF/HashFunction.cpp
+        DCF/HashFunction.h
+        DCF/CityHash.cpp
+        DCF/DynamicCuckooFilter.cpp
+        DCF/DynamicCuckooFilter.h
 
         FASTA/FastaReader.h
         FASTA/FastaReader.cpp
         FASTA/FastaIterator.h
         FASTA/FastaIterator.cpp
+#        FASTA/FastaTest.cpp
+
+#        Tests
+#        Tests/SimpleTest.cpp
+#        Tests/SimpleFastaTest.cpp
+        Tests/SimpleDynamicTest.cpp
 
         ArgParser/cxxopts.hpp
-#        Tests/SimpleTest.cpp
-        Tests/SimpleFastaTest.cpp
         )

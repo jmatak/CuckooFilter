@@ -19,6 +19,7 @@ FastaReader::FastaReader(string fileName, int k) : fileName(std::move(fileName))
  */
 void FastaReader::initialize() {
     currentPosition = new std::ifstream(fileName, std::ifstream::in);
+    buffer = "";
     if (!currentPosition->is_open())
         throw std::runtime_error("Please provide a valid FASTA formatted file! Filename: " + fileName);
 
