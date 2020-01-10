@@ -7,7 +7,7 @@
 int main() {
     int kmers = 10;
     // TODO: Working with relative paths
-    string fileName = "/home/josipm/Documents/Programello/FER9/BIOINF/Project/CuckooFilter/Data/ecoli_small.fna";
+    string fileName = "/home/patrik/FAKS/3_SEM_DIPL/BIOINF/projekt_impl/CuckooFilter/Data/ecoli_small.fna";
     FastaReader reader(fileName, kmers);
     FastaIterator iterator(&reader);
 
@@ -34,10 +34,10 @@ int main() {
         string kmere = iterator.next();
         string kmere1 = allKmers.at(kmers_count2);
 
-        if (kmere.compare(kmere1) != 0) {
-            cout << kmers_count2 << " -> " << kmere << " and " << kmere1 << endl;
-            break;
-        }
+//        if (kmere.compare(kmere1) != 0) {
+//            cout << kmers_count2 << " -> " << kmere << " and " << kmere1 << endl;
+//            break;
+//        }
 
         std::cout << kmere << std::endl;
         if (kmers != kmere.size()) {

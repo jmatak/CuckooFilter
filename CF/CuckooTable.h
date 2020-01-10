@@ -41,7 +41,7 @@ public:
 
     size_t fingerprintCount(size_t i);
 
-    size_t freeEntries();
+    size_t getNumOfFreeEntries();
 
     void printTable();
 

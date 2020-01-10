@@ -129,7 +129,7 @@ bool CuckooTable<fp_type>::deleteFingerprint(const uint32_t fp, const size_t i) 
 }
 
 template<typename fp_type>
-size_t CuckooTable<fp_type>::freeEntries() {
+size_t CuckooTable<fp_type>::getNumOfFreeEntries() {
     size_t free = 0;
     for (size_t i = 0; i < table_size; ++i) {
         for (size_t j = 0; j < entries_per_bucket; ++j) {
@@ -152,6 +152,7 @@ void CuckooTable<fp_type>::printTable() {
         }
         std::cout << std::endl;
     }
+    std::cout << std::dec;
 }
 
 template

@@ -9,6 +9,7 @@ CuckooFilter<element_type, fp_type>::CuckooFilter(uint32_t max_table_size,
     victim = {0, 0};
     this->fp_mask = (1ULL << bits_per_fp) - 1;
     size_t table_size = highestPowerOfTwo(max_table_size);
+
     table = new CuckooTable<fp_type>(table_size, bits_per_fp, entries_per_bucket, fp_mask);
     hash_function = new HashFunction();
 }
@@ -146,7 +147,7 @@ CuckooFilter<element_type, fp_type>::~CuckooFilter() {
 
 template<typename element_type, typename fp_type>
 double CuckooFilter<element_type, fp_type>::availability() {
-    size_t free = this->table->freeEntries();
+    size_t free = this->table->getNumOfFreeEntries();
     size_t ts = this->table->maxNoOfElements();
 
     return ((double) free) / ((double) ts);
@@ -157,3 +158,5 @@ class CuckooFilter<std::string>;
 
 template
 class CuckooFilter<std::size_t, std::uint16_t>;
+template
+class CuckooFilter<std::string, std::uint16_t>;

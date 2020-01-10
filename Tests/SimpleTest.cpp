@@ -15,7 +15,7 @@
  */
 void test1(size_t tableSize, size_t n) {
 //    size_t total_items = tableSize;
-    CuckooFilter<size_t, uint16_t> filter(tableSize, 16, 4);
+    CuckooFilter<size_t, uint16_t> filter(tableSize, 12, 4);
 
     //  inserting items to the cuckoo filter
     size_t num_inserted = 0;
@@ -40,18 +40,18 @@ void test1(size_t tableSize, size_t n) {
     }
 
 //    filter.print();
-
-    std::cout << "availability: "
-              << filter.availability() * 100 << "%\n";
+//
+//    std::cout << "availability: "
+//              << filter.availability() * 100 << "%\n";
 
     std::cout << "false positive rate is "
               << 100.0 * false_queries / total_queries << "%\n";
 
 }
 
-
 int main(int argc, char **argv) {
-    size_t tableSize = 1048576;
+//    size_t tableSize = 1048576;
+    size_t tableSize = 1000000;
 //    size_t tableSize = 1024;
     size_t elements = tableSize;
 

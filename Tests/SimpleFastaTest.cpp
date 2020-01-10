@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 #include "../CF/CuckooFilter.h"
 #include "../FASTA/FastaReader.h"
 #include "../FASTA/FastaIterator.h"
@@ -18,12 +19,19 @@ int main(int argc, char **argv) {
     int kmers = result["kmer_size"].as<int>();
     size_t total_items = result["filter_size"].as<int>();;
 
-    CuckooFilter<string> filter(total_items);
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+    CuckooFilter<string, uint16_t> filter(total_items, 12, 4);
     FastaReader reader(fileName, kmers);
     FastaIterator iterator(&reader);
 
+    int index = 0;
     while (iterator.hasNext()) {
         string kmere = iterator.next();
+        index++;
+        if (index == 953) {
+            std::cout << "bljee";
+        }
         if (!filter.insertElement(kmere)) {
             break;
         }
@@ -38,6 +46,17 @@ int main(int argc, char **argv) {
         no_kmers++;
         if (hit) no_hits++;
     }
+
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+    filter.print();
+//
+    std::cout << "availability: "
+              << filter.availability() * 100 << "%\n";
+
+    std::cout << "Time elapsed = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()
+              << "[µs]" << std::endl;
+//
 
     cout << no_hits << "/" << no_kmers << endl;
     cout << no_hits / (double) no_kmers << endl;
