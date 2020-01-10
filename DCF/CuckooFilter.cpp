@@ -66,15 +66,13 @@ bool CuckooFilter<element_type, fp_type>::insert(uint32_t fp, size_t index) {
 
     victim.index = curr_index;
     victim.fp = curr_fp;
-    return true;
+    return false;
 }
 
 template<typename element_type, typename fp_type>
 bool CuckooFilter<element_type, fp_type>::insertElement(element_type &element) {
     size_t index;
     uint32_t fp;
-
-    if (victim.fp) return false;
 
     firstPass(element, &fp, &index);
     return this->insert(fp, index);

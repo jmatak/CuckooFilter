@@ -18,14 +18,18 @@ void test1(size_t tableSize, size_t n) {
     //  inserting items to the cuckoo filter
     size_t num_inserted = 0;
     for (size_t i = 0; i < n; i++, num_inserted++) {
+        std::cout<< i << std::endl;
         if (!filter.insertElement(i)) {
             break;
         }
-        assert(filter.containsElement(i));
+        for (int j = 0; j <= i; ++j) {
+            assert(filter.containsElement(i));
+        }
     };
 
 
     for (size_t i = 0; i < num_inserted; i++) {
+        std::cout<< i << std::endl;
         assert(filter.containsElement(i));
     }
 
@@ -38,8 +42,6 @@ void test1(size_t tableSize, size_t n) {
         total_queries++;
     }
 
-    filter.print();
-
     std::cout << "Inserted: " << num_inserted << "/" << n << std::endl;
     std::cout << "false positive rate is "
               << 100.0 * false_queries / total_queries << "%\n";
@@ -50,9 +52,9 @@ void test1(size_t tableSize, size_t n) {
 int main(int argc, char **argv) {
     size_t tableSize = 10;
 //    size_t tableSize = 1024;
-    size_t elements = 50;
+    size_t elements = 100;
 
-    int n = 1;
+    int n = 30;
     double total_time = 0.;
 
     for (size_t i = 0; i < n; ++i) {
