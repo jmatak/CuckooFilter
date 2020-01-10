@@ -111,8 +111,9 @@ bool DynamicCuckooFilter<element_type, fp_type>::deleteElement(element_type elem
 
 template<typename element_type, typename fp_type>
 void DynamicCuckooFilter<element_type, fp_type>::storeVictim(Victim &victim) {
-    auto *cf = nextCF(head_cf);
+    auto *cf = nextCF(active_cf);
     if (!cf->insert(victim.fp, victim.index)) {
+        active_cf = active_cf->next;
         storeVictim(cf->victim);
     }
 }
