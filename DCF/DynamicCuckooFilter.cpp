@@ -8,24 +8,15 @@ DynamicCuckooFilter<element_type, fp_type>::DynamicCuckooFilter(uint32_t max_tab
     this->cf_table_size = highestPowerOfTwo(max_table_size);
     this->bits_per_fp = bits_per_fp;
     this->entries_per_bucket = entries_per_bucket;
+
     this->hashFunction = new HashFunction();
+
 
     active_cf = new CuckooFilter<element_type, fp_type>(cf_table_size, bits_per_fp, entries_per_bucket, hashFunction);
     head_cf = tail_cf = active_cf;
     cf_count = 1;
     element_count = 0;
 
-}
-
-template<typename element_type, typename fp_type>
-DynamicCuckooFilter<element_type, fp_type>::~DynamicCuckooFilter() {
-    CuckooFilter<element_type, fp_type> *cf = head_cf;
-    CuckooFilter<element_type, fp_type> *temp;
-    while (cf) {
-        temp = cf->next;
-        delete cf;
-        cf = temp;
-    }
 }
 
 template<typename element_type, typename fp_type>

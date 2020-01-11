@@ -26,8 +26,6 @@ private:
 public:
     DynamicCuckooFilter(uint32_t max_table_size, size_t bits_per_fp = 8, size_t entries_per_bucket = 4);
 
-    ~DynamicCuckooFilter();
-
     CuckooFilter<element_type, fp_type>* nextCF(CuckooFilter<element_type, fp_type>* cf);
 
     void storeVictim(Victim &victim);
