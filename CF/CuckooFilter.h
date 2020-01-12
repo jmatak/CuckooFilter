@@ -25,6 +25,21 @@ struct Victim {
 };
 
 
+/**
+ * /**
+ *
+ * A cuckoo filter is a space-efficient probabilistic data structure that is used to test whether an
+ * element is a member of a set, like a Bloom filter does. False positive matches are possible, but
+ * false negatives are not – in other words, a query returns either "possibly in set" or "definitely not
+ * in set". Constructing Cuckoo Filter with specific table size, number of bits per fingerprint and number
+ * of entries per bucket.
+ *
+ *
+ * @tparam element_type Working element type
+ * @tparam entries_per_bucket Number of entries in bucket
+ * @tparam bits_per_fp  Number of bits in fingerprint
+ * @tparam fp_type Fingerprint type
+ */
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 class CuckooFilter {
 private:
@@ -67,6 +82,16 @@ public:
 };
 
 
+/**
+ *
+ * A cuckoo filter is a space-efficient probabilistic data structure that is used to test whether an
+ * element is a member of a set, like a Bloom filter does. False positive matches are possible, but
+ * false negatives are not – in other words, a query returns either "possibly in set" or "definitely not
+ * in set". Constructing Cuckoo Filter with specific table size, number of bits per fingerprint and number
+ * of entries per bucket.
+ *
+ * @param max_table_size Maximum table size
+ */
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::CuckooFilter(uint32_t max_table_size) {
     element_count = 0;
@@ -78,12 +103,24 @@ CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::CuckooFilt
     hash_function = new HashFunction();
 }
 
+/**
+ * Gets index from previously calculated hash value.
+ *
+ * @param hash_value Hash value
+ * @return Index out of hash value
+ */
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
-size_t CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::getIndex(uint32_t hv) const {
+size_t CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::getIndex(uint32_t hash_value) const {
     // equivalent to modulo when number of buckets is a power of two
-    return hv & (table->getTableSize() - 1);
+    return hash_value & (table->getTableSize() - 1);
 }
 
+/**
+ * Function for calculating fingerprint out of given hash value.
+ *
+ * @param hash_value Hash value
+ * @return Fingerprint for saving from hash value
+ */
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 uint32_t CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::fingerprint(uint32_t hash_value) const {
     uint32_t fingerprint = hash_value & fp_mask;
@@ -92,6 +129,14 @@ uint32_t CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::f
     return fingerprint;
 }
 
+/**
+ * Method for calculating first index and fingerprint from element hash value.
+ * Both arguments should be accessed by reference.
+ *
+ * @param item Item to store in filter
+ * @param fp Fingerprint pointer
+ * @param index Index pointer
+ */
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 inline void
 CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::firstPass(const element_type &item, uint32_t *fp,
@@ -102,6 +147,14 @@ CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::firstPass(
     *fp = fingerprint(hash_value);
 }
 
+/**
+ * Calculating second index from previous index and calculated fingerprint
+ *  $i2 = i1 \oplus hash(f)$\;
+ *
+ * @param index Previously calculated index
+ * @param fp Element fingerprint
+ * @return Secondary index calculated from fingerprint and previous index
+ */
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 uint32_t CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::indexComplement(const size_t index,
                                                                                                const uint32_t fp) const {
@@ -109,6 +162,14 @@ uint32_t CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::i
     return getIndex(hv);
 }
 
+/**
+ * Insertion of fingerprint fp on position index. Maximum tries are defined with KICKS_MAX_COUNT
+ * constant.
+ *
+ * @param fp Fingerprint for insertion
+ * @param index Position for insertion
+ * @return True if element is inserted, false otherwise, or if item is kicked
+ */
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::insert(uint32_t fp, size_t index) {
     size_t curr_index = index;
@@ -134,6 +195,13 @@ bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::inser
     return true;
 }
 
+/**
+ * Inserting element into Cuckoo Filter. In first pass, fingerprint and index are calculated,
+ * proceeding with insertion with reallocation,
+ *
+ * @param element Element for insertion
+ * @return True if element is inserted
+ */
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::insertElement(element_type &element) {
     size_t index;
@@ -145,6 +213,13 @@ bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::inser
     return this->insert(fp, index);
 }
 
+/**
+ *  Deleting element from Cuckoo Filter. Algorithm requires checking both primary and secondary index,
+ *  if any of them contain fingerprint, it is removed from structure
+ *
+ * @param element Element for deletion
+ * @return True if item is deleted
+ */
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::deleteElement(const element_type &element) {
     uint32_t fp;
@@ -180,6 +255,13 @@ bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::delet
     return true;
 }
 
+/**
+ *  Checking if element is contained in Cuckoo Filter. Algorithm requires checking both primary and secondary index,
+ *  if any of them contain fingerprint, returns true.
+ *
+ * @param element Element for deletion
+ * @return True if item is contained
+ */
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::containsElement(element_type &element) {
     uint32_t fp;
@@ -197,6 +279,9 @@ bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::conta
 }
 
 
+/**
+ * Prints cuckoo filter table where buckets are written in hexadecimal.
+ */
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 void CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::print() {
     table->printTable();
@@ -225,6 +310,11 @@ double CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::ava
 }
 
 
+/**
+ * Gets size of table from filter.
+ *
+ * @return Table size
+ */
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 size_t CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::getTableSize() {
     return this->table->getTableSize();
