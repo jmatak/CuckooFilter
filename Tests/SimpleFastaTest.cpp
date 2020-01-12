@@ -29,9 +29,6 @@ int main(int argc, char **argv) {
     while (iterator.hasNext()) {
         string kmere = iterator.next();
         index++;
-        if (index == 953) {
-            std::cout << "bljee";
-        }
         if (!filter.insertElement(kmere)) {
             break;
         }
@@ -50,13 +47,12 @@ int main(int argc, char **argv) {
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
     filter.print();
-//
+
     std::cout << "availability: "
-              << filter.availability() * 100 << "%\n";
+              << filter.availability() << "%\n";
 
     std::cout << "Time elapsed = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()
               << "[µs]" << std::endl;
-//
 
     cout << no_hits << "/" << no_kmers << endl;
     cout << no_hits / (double) no_kmers << endl;

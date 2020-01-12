@@ -139,10 +139,10 @@ CuckooFilter<element_type, fp_type>::~CuckooFilter() {
 }
 
 /**
- *
+ * Calculates the percentage of free space in the table that the filter uses.
  * @tparam element_type
  * @tparam fp_type
- * @return ratio of free to total number of entries
+ * @return percentage of free space in the cuckoo filter's table
  */
 
 template<typename element_type, typename fp_type>
@@ -150,7 +150,7 @@ double CuckooFilter<element_type, fp_type>::availability() {
     size_t free = this->table->getNumOfFreeEntries();
     size_t ts = this->table->maxNoOfElements();
 
-    return ((double) free) / ((double) ts);
+    return (free / ((double) ts)) * 100.;
 }
 
 template
@@ -158,5 +158,6 @@ class CuckooFilter<std::string>;
 
 template
 class CuckooFilter<std::size_t, std::uint16_t>;
+
 template
 class CuckooFilter<std::string, std::uint16_t>;

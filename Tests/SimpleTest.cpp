@@ -1,72 +1,114 @@
-//
-// Created by patrik on 08. 01. 2020..
-//
-
-
 #include "../ArgParser/cxxopts.hpp"
 #include "../CF/CuckooFilter.h"
 #include <chrono>
 
 
-/**
- *
- * @param tableSize
- * @param n elements from 0 to n will be inserted
- */
-void test1(size_t tableSize, size_t n) {
-//    size_t total_items = tableSize;
-    CuckooFilter<size_t, uint16_t> filter(tableSize, 12, 4);
+template<typename fp_type>
+int insertIntsInRange(CuckooFilter<size_t, fp_type> *filter, size_t from, size_t to) {
+    assert(from < to);
 
-    //  inserting items to the cuckoo filter
-    size_t num_inserted = 0;
-    for (size_t i = 0; i < n; i++, num_inserted++) {
-         if (!filter.insertElement(i)) {
+    size_t numInserted = 0;
+    for (size_t i = from; i < to; i++, numInserted++) {
+        if (!(*filter).insertElement(i)) {
             break;
         }
-    };
-
-    // check if all inserted items are in filter, expected to be true for all
-    for (size_t i = 0; i < num_inserted; i++) {
-        assert(filter.containsElement(i));
     }
+    return numInserted;
+}
 
+
+template<typename fp_type>
+void containsIntsInRange(CuckooFilter<size_t, fp_type> *filter, size_t from, size_t to) {
+    for (size_t i = from; i < to; i++) {
+        assert((*filter).containsElement(i));
+    }
+}
+
+template<typename fp_type>
+float getFPRate(CuckooFilter<size_t, fp_type> *filter, size_t from, size_t to) {
     size_t total_queries = 0;
     size_t false_queries = 0;
-    for (size_t i = n; i < 2 * n; i++) {
-        if (filter.containsElement(i)) {
+    for (size_t i = from; i < to; i++) {
+        if ((*filter).containsElement(i)) {
             false_queries++;
         }
         total_queries++;
     }
-
-//    filter.print();
-//
-//    std::cout << "availability: "
-//              << filter.availability() * 100 << "%\n";
-
-    std::cout << "false positive rate is "
-              << 100.0 * false_queries / total_queries << "%\n";
-
+    return 100.0 * false_queries / total_queries;
 }
 
-int main(int argc, char **argv) {
-//    size_t tableSize = 1048576;
-    size_t tableSize = 1000000;
-//    size_t tableSize = 1024;
-    size_t elements = tableSize;
+template<typename fp_type>
+void deleteAll(CuckooFilter<size_t, fp_type> *filter, size_t from, size_t to) {
+    for (size_t i = from; i < to; i++) {
+        (*filter).deleteElement(i);
+    }
+}
 
-    int n = 10;
-    double total_time = 0.;
+
+int main(int argc, char **argv) {
+    size_t tableSize = 1000;
+
+    //Elements inserted in the filter are from 0 to numOfElements
+    size_t numOfElements = tableSize;
+//    size_t numOfElements = 1000000;
+
+    int n = 30;
+
+    double totalTime = 0.;
+    double insTotalTime = 0.;
+    double contTotalTime = 0.;
+    double delTotalTime = 0.;
+
+    size_t from = 0;
+    size_t to = numOfElements;
+    size_t numInserted;
+    float numInsertedTot = 0;
+    float fpRate;
 
     for (size_t i = 0; i < n; ++i) {
         std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-        test1(tableSize, elements);
+
+        CuckooFilter<size_t, uint16_t> filter(tableSize, 16, 4);
+
+        std::chrono::steady_clock::time_point insBegin = std::chrono::steady_clock::now();
+        numInserted = insertIntsInRange(&filter, from, to);
+        numInsertedTot += numInserted;
+        std::chrono::steady_clock::time_point insEnd = std::chrono::steady_clock::now();
+        insTotalTime += std::chrono::duration_cast<std::chrono::microseconds>(insEnd - insBegin).count();
+
+        std::chrono::steady_clock::time_point containsBegin = std::chrono::steady_clock::now();
+        containsIntsInRange(&filter, from, numInserted);
+        std::chrono::steady_clock::time_point containsEnd = std::chrono::steady_clock::now();
+        contTotalTime += std::chrono::duration_cast<std::chrono::microseconds>(containsEnd - containsBegin).count();
+
+        fpRate = getFPRate(&filter, to, 2 * to);
+        double availability = filter.availability();
+
+        std::chrono::steady_clock::time_point delBegin = std::chrono::steady_clock::now();
+        deleteAll(&filter, from, numInserted);
+        std::chrono::steady_clock::time_point delEnd = std::chrono::steady_clock::now();
+        delTotalTime += std::chrono::duration_cast<std::chrono::microseconds>(delEnd - delBegin).count();
+
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-        total_time += std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+        totalTime += std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+
+        std::cout << i << ". iter" << std::endl;
+        std::cout << "Inserted: " << numInserted << "/" << numOfElements << std::endl;
+        std::cout << "false positive rate is "
+                  << fpRate << "%\n";
+        std::cout << "availability: "
+                  << availability << "%\n";
+
     }
 
-    std::cout << "Avg time = " << total_time / n
+
+    std::cout << "\nAvg insertion time: " << insTotalTime / n
+              << "[µs] (for " << numInsertedTot / ((float) n) << " elements inserted in avg)" << std::endl;
+    std::cout << "Avg lookup time: " << contTotalTime / n
+              << "[µs] (for " << numInsertedTot / ((float) n) << " elements inserted in avg)" << std::endl;
+    std::cout << "Avg deletion time: " << delTotalTime / n
+              << "[µs] (for " << numInsertedTot / ((float) n) << " elements inserted in avg)" << std::endl;
+    std::cout << "Avg time (all operations): " << totalTime / n
               << "[µs]" << std::endl;
 
-    return 0;
 }
