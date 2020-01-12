@@ -31,11 +31,10 @@ uint32_t CuckooFilter<element_type, fp_type>::fingerprint(uint32_t hash_value) c
 
 template<typename element_type, typename fp_type>
 void CuckooFilter<element_type, fp_type>::firstPass(const element_type &item, uint32_t *fp, size_t *index) const {
-    const u_int32_t hash_value = hash_function->hash(item);
-    const u_int32_t fingeprint_value = hash_function->fingerprint(item);
+    const u_int64_t hash_value = hash_function->hash(item);
 
-    *index = getIndex(hash_value);
-    *fp = fingerprint(fingeprint_value);
+    *index = getIndex(hash_value >> 32);
+    *fp = fingerprint(hash_value);
 }
 
 template<typename element_type, typename fp_type>
@@ -151,6 +150,12 @@ double CuckooFilter<element_type, fp_type>::availability() {
     size_t ts = this->table->maxNoOfElements();
 
     return (free / ((double) ts)) * 100.;
+}
+
+
+template<typename element_type, typename fp_type>
+size_t CuckooFilter<element_type, fp_type>::getTableSize() {
+    return this->table->getTableSize();
 }
 
 template

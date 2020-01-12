@@ -14,18 +14,19 @@ static const uint32_t MURMUR_CONST = 0x5bd1e995;
 // variables via integer arithmetic without primes".
 class HashFunction {
 private:
-    uint32_t multiply_, add_;
+    unsigned __int128 multiply_, add_;
+
 
 public:
     HashFunction();
 
-    uint32_t hash(uint32_t key) const;
+    uint64_t hash(uint32_t key) const;
 
-    uint32_t fingerprint(uint32_t key) const;
+    //uint64_t fingerprint(uint32_t key) const;
 
     uint32_t hash(std::string key) const;
 
-    uint32_t fingerprint(std::string key) const;
+    //uint32_t fingerprint(std::string key) const;
 
     static uint32_t cityHashFunction(uint32_t *buff, size_t len);
 
