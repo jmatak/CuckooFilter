@@ -45,6 +45,9 @@ private:
 
 
 public:
+
+    size_t total_kicks = 0;
+
     CuckooFilter(uint32_t max_table_size, size_t bits_per_fp = 8, size_t entries_per_bucket = 4);
 
     ~CuckooFilter();

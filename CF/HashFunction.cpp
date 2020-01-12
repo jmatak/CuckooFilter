@@ -2,12 +2,12 @@
 
 
 HashFunction::HashFunction() {
-    ::std::random_device random;
+    srand (1);
     for (auto v : {&multiply_, &add_}) {
-        *v = random();
+        *v = rand();
         for (int i = 1; i <= 4; ++i) {
             *v = *v << 32;
-            *v |= random();
+            *v |= rand();
         }
     }
 }

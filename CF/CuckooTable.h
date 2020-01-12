@@ -9,27 +9,26 @@
 
 #include "BitManager.h"
 
-struct Bucket {
-    // TODO: stack vs heap?
-    uint8_t *data;
-};
 
-template<typename fp_type>
+template<typename fp_type, size_t entries_per_bucket=4, size_t bits_per_fp=8>
 class CuckooTable {
 
 private:
-    size_t entries_per_bucket = 4;
-    size_t bytes_per_bucket = (entries_per_bucket * bits_per_fp) / 8;
+    static const size_t bytes_per_bucket = (entries_per_bucket * bits_per_fp) / 8;
     size_t table_size;
-    size_t bits_per_fp;
     uint32_t fp_mask;
 
     BitManager<fp_type> *bit_manager;
+
+    struct Bucket {
+        // TODO: stack vs heap?
+        uint8_t data[bytes_per_bucket];
+    };
     Bucket *buckets;
 
 public:
 
-    CuckooTable(size_t table_size, size_t bits_per_fp, size_t entries_per_bucket, uint32_t fp_mask);
+    CuckooTable(size_t table_size, uint32_t fp_mask);
 
     ~CuckooTable();
 

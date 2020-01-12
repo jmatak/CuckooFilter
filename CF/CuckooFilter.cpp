@@ -1,3 +1,4 @@
+#include <iostream>
 #include "CuckooFilter.h"
 
 
@@ -10,7 +11,7 @@ CuckooFilter<element_type, fp_type>::CuckooFilter(uint32_t max_table_size,
     this->fp_mask = (1ULL << bits_per_fp) - 1;
     size_t table_size = highestPowerOfTwo(max_table_size);
 
-    table = new CuckooTable<fp_type>(table_size, bits_per_fp, entries_per_bucket, fp_mask);
+    table = new CuckooTable<fp_type>(table_size, fp_mask);
     hash_function = new HashFunction();
 }
 
@@ -22,15 +23,14 @@ size_t CuckooFilter<element_type, fp_type>::getIndex(uint32_t hv) const {
 
 template<typename element_type, typename fp_type>
 uint32_t CuckooFilter<element_type, fp_type>::fingerprint(uint32_t hash_value) const {
-    uint32_t fingerprint;
-    fingerprint = hash_value & fp_mask;
+    uint32_t fingerprint = hash_value & fp_mask;
     // make sure that fingerprint != 0
     fingerprint += (fingerprint == 0);
     return fingerprint;
 }
 
 template<typename element_type, typename fp_type>
-void CuckooFilter<element_type, fp_type>::firstPass(const element_type &item, uint32_t *fp, size_t *index) const {
+inline void CuckooFilter<element_type, fp_type>::firstPass(const element_type &item, uint32_t *fp, size_t *index) const {
     const u_int64_t hash_value = hash_function->hash(item);
 
     *index = getIndex(hash_value >> 32);
@@ -50,6 +50,7 @@ bool CuckooFilter<element_type, fp_type>::insert(uint32_t fp, size_t index) {
     uint32_t prev_fp;
 
     for (int kicks = 0; kicks < KICKS_MAX_COUNT; kicks++) {
+        total_kicks++;
         bool eject = (kicks != 0);
         prev_fp = 0;
         if (table->replacingFingerprintInsertion(curr_index, curr_fp, eject, prev_fp)) {
@@ -162,7 +163,13 @@ template
 class CuckooFilter<std::string>;
 
 template
+class CuckooFilter<std::size_t, std::uint8_t>;
+
+template
 class CuckooFilter<std::size_t, std::uint16_t>;
+
+template
+class CuckooFilter<std::size_t, std::uint32_t>;
 
 template
 class CuckooFilter<std::string, std::uint16_t>;

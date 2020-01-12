@@ -4,20 +4,13 @@
 #include "CuckooTable.h"
 
 
-template<typename fp_type>
-CuckooTable<fp_type>::CuckooTable(const size_t table_size, size_t bits_per_fp,
-                                  size_t entries_per_bucket, uint32_t fp_mask) {
+template<typename fp_type, size_t entries_per_bucket, size_t bits_per_fp>
+CuckooTable<fp_type, entries_per_bucket, bits_per_fp>::CuckooTable(const size_t table_size, uint32_t fp_mask) {
     this->table_size = table_size;
-    this->bits_per_fp = bits_per_fp;
-    this->entries_per_bucket = entries_per_bucket;
     this->fp_mask = fp_mask;
-    this->bytes_per_bucket = (entries_per_bucket * bits_per_fp) / 8;
 
     buckets = new Bucket[table_size];
-    for (size_t i = 0; i < table_size; i++) {
-        buckets[i].data = new uint8_t[entries_per_bucket];
-        memset(buckets[i].data, 0, bytes_per_bucket);
-    }
+    memset(buckets, 0, bytes_per_bucket * table_size);
 
     if (entries_per_bucket == 4 && bits_per_fp == 4 && std::is_same<fp_type, uint8_t>::value) {
         bit_manager = new BitManager4<fp_type>();
@@ -35,31 +28,33 @@ CuckooTable<fp_type>::CuckooTable(const size_t table_size, size_t bits_per_fp,
 
 }
 
-template<typename fp_type>
-CuckooTable<fp_type>::~CuckooTable() {
+template<typename fp_type, size_t entries_per_bucket, size_t bits_per_fp>
+CuckooTable<fp_type, entries_per_bucket, bits_per_fp>::~CuckooTable() {
     delete[] buckets;
     delete bit_manager;
 }
 
-template<typename fp_type>
-size_t CuckooTable<fp_type>::getTableSize() {
+template<typename fp_type, size_t entries_per_bucket, size_t bits_per_fp>
+size_t CuckooTable<fp_type, entries_per_bucket, bits_per_fp>::getTableSize() {
     return table_size;
 }
 
-template<typename fp_type>
-size_t CuckooTable<fp_type>::maxNoOfElements() {
+template<typename fp_type, size_t entries_per_bucket, size_t bits_per_fp>
+size_t CuckooTable<fp_type, entries_per_bucket, bits_per_fp>::maxNoOfElements() {
     return entries_per_bucket * table_size;
 }
 
-template<typename fp_type>
-inline uint32_t CuckooTable<fp_type>::getFingerprint(const size_t i, const size_t j) {
+template<typename fp_type, size_t entries_per_bucket, size_t bits_per_fp>
+inline uint32_t CuckooTable<fp_type, entries_per_bucket, bits_per_fp>::getFingerprint(const size_t i, const size_t j) {
     const uint8_t *bucket = buckets[i].data;
+    //bucket += j;
+    //uint32_t  fp = *((uint8_t *)bucket);
     uint32_t fp = bit_manager->read(j, bucket);
     return fp & fp_mask;
 }
 
-template<typename fp_type>
-size_t CuckooTable<fp_type>::fingerprintCount(const size_t i) {
+template<typename fp_type, size_t entries_per_bucket, size_t bits_per_fp>
+size_t CuckooTable<fp_type, entries_per_bucket, bits_per_fp>::fingerprintCount(const size_t i) {
     size_t count = 0;
     for (size_t j = 0; j < entries_per_bucket; j++) {
         if (getFingerprint(i, j) != 0) {
@@ -69,15 +64,16 @@ size_t CuckooTable<fp_type>::fingerprintCount(const size_t i) {
     return count;
 }
 
-template<typename fp_type>
-void CuckooTable<fp_type>::insertFingerprint(const size_t i, const size_t j, const uint32_t fp) {
+template<typename fp_type, size_t entries_per_bucket, size_t bits_per_fp>
+void CuckooTable<fp_type, entries_per_bucket, bits_per_fp>::insertFingerprint(const size_t i, const size_t j, const uint32_t fp) {
     const uint8_t *bucket = buckets[i].data;
     uint32_t efp = fp & fp_mask;
     bit_manager->write(j, bucket, efp);
+    //((uint8_t *)bucket)[j] = efp;
 }
 
-template<typename fp_type>
-inline bool CuckooTable<fp_type>::replacingFingerprintInsertion(const size_t i, const uint32_t fp,
+template<typename fp_type, size_t entries_per_bucket, size_t bits_per_fp>
+inline bool CuckooTable<fp_type, entries_per_bucket, bits_per_fp>::replacingFingerprintInsertion(const size_t i, const uint32_t fp,
                                                                 const bool eject, uint32_t &prev_fp) {
     for (size_t j = 0; j < entries_per_bucket; j++) {
         if (getFingerprint(i, j) == 0) {
@@ -94,31 +90,27 @@ inline bool CuckooTable<fp_type>::replacingFingerprintInsertion(const size_t i, 
     return false;
 }
 
-template<typename fp_type>
-bool CuckooTable<fp_type>::containsFingerprint(const size_t i, const uint32_t fp) {
+template<typename fp_type, size_t entries_per_bucket, size_t bits_per_fp>
+bool CuckooTable<fp_type, entries_per_bucket, bits_per_fp>::containsFingerprint(const size_t i, const uint32_t fp) {
     const uint8_t *bucket = buckets[i].data;
     uint64_t val = *((uint64_t *) bucket);
 
     return bit_manager->hasvalue(val, fp);
 }
 
-template<typename fp_type>
-bool CuckooTable<fp_type>::containsFingerprint(const size_t i1, const size_t i2, const uint32_t fp) {
+template<typename fp_type, size_t entries_per_bucket, size_t bits_per_fp>
+bool CuckooTable<fp_type, entries_per_bucket, bits_per_fp>::containsFingerprint(const size_t i1, const size_t i2, const uint32_t fp) {
     const uint8_t *b1 = buckets[i1].data;
     const uint8_t *b2 = buckets[i2].data;
 
     uint64_t val1 = *((uint64_t *) b1);
     uint64_t val2 = *((uint64_t *) b2);
 
-    bool h1 = bit_manager->hasvalue(val1, fp);
-    bool h2 = bit_manager->hasvalue(val2, fp);
-
-    return h1 || h2;
-//    return bit_manager->hasvalue(val1, fp) || bit_manager->hasvalue(val2, fp);
+    return bit_manager->hasvalue(val1, fp) || bit_manager->hasvalue(val2, fp);
 }
 
-template<typename fp_type>
-bool CuckooTable<fp_type>::deleteFingerprint(const uint32_t fp, const size_t i) {
+template<typename fp_type, size_t entries_per_bucket, size_t bits_per_fp>
+bool CuckooTable<fp_type, entries_per_bucket, bits_per_fp>::deleteFingerprint(const uint32_t fp, const size_t i) {
     for (size_t j = 0; j < entries_per_bucket; j++) {
         if (getFingerprint(i, j) == fp) {
             insertFingerprint(i, j, 0);
@@ -128,8 +120,8 @@ bool CuckooTable<fp_type>::deleteFingerprint(const uint32_t fp, const size_t i) 
     return false;
 }
 
-template<typename fp_type>
-size_t CuckooTable<fp_type>::getNumOfFreeEntries() {
+template<typename fp_type, size_t entries_per_bucket, size_t bits_per_fp>
+size_t CuckooTable<fp_type, entries_per_bucket, bits_per_fp>::getNumOfFreeEntries() {
     size_t free = 0;
     for (size_t i = 0; i < table_size; ++i) {
         for (size_t j = 0; j < entries_per_bucket; ++j) {
@@ -141,8 +133,8 @@ size_t CuckooTable<fp_type>::getNumOfFreeEntries() {
     return free;
 }
 
-template<typename fp_type>
-void CuckooTable<fp_type>::printTable() {
+template<typename fp_type, size_t entries_per_bucket, size_t bits_per_fp>
+void CuckooTable<fp_type, entries_per_bucket, bits_per_fp>::printTable() {
     for (int i = 0; i < table_size; ++i) {
         std::cout << i << " | ";
         for (int j = 0; j < entries_per_bucket; ++j) {
