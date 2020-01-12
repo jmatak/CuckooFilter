@@ -179,7 +179,7 @@ void CuckooFilter<element_type, fp_type>::refreshOnInsert() {
 
 
 template
-class CuckooFilter<std::string>;
+class CuckooFilter<std::string, uint16_t>;
 
 template
 class CuckooFilter<std::size_t, std::uint16_t>;

@@ -9,7 +9,7 @@ int insertIntsInRange(DynamicCuckooFilter<size_t, fp_type> *filter, size_t from,
 
     size_t numInserted = 0;
     for (size_t i = from; i < to; i++, numInserted++) {
-        if (!(*filter).insertElement(i)) {
+        if (!filter->insertElement(i)) {
             break;
         }
     }
@@ -19,7 +19,7 @@ int insertIntsInRange(DynamicCuckooFilter<size_t, fp_type> *filter, size_t from,
 template<typename fp_type>
 void containsIntsInRange(DynamicCuckooFilter<size_t, fp_type> *filter, size_t from, size_t to) {
     for (size_t i = from; i < to; i++) {
-        assert((*filter).containsElement(i));
+        assert(filter->containsElement(i));
     }
 }
 
@@ -28,7 +28,7 @@ float getFPRate(DynamicCuckooFilter<size_t, fp_type> *filter, size_t from, size_
     size_t total_queries = 0;
     size_t false_queries = 0;
     for (size_t i = from; i < to; i++) {
-        if ((*filter).containsElement(i)) {
+        if (filter->containsElement(i)) {
             false_queries++;
         }
         total_queries++;
@@ -39,7 +39,7 @@ float getFPRate(DynamicCuckooFilter<size_t, fp_type> *filter, size_t from, size_
 template<typename fp_type>
 void deleteAll(DynamicCuckooFilter<size_t, fp_type> *filter, size_t from, size_t to) {
     for (size_t i = from; i < to; i++) {
-        (*filter).deleteElement(i);
+        filter->deleteElement(i);
     }
 }
 

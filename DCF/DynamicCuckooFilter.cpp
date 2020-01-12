@@ -147,3 +147,5 @@ class DynamicCuckooFilter<unsigned long, unsigned short>;
 
 template
 class DynamicCuckooFilter<uint16_t, uint16_t>;
+template
+class DynamicCuckooFilter<std::string , uint16_t>;

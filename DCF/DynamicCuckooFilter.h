@@ -19,14 +19,14 @@ private:
 
     Victim victim;
 
-    CuckooFilter<element_type, fp_type>* head_cf;
-    CuckooFilter<element_type, fp_type>* tail_cf;
-    CuckooFilter<element_type, fp_type>* active_cf;
+    CuckooFilter<element_type, fp_type> *head_cf;
+    CuckooFilter<element_type, fp_type> *tail_cf;
+    CuckooFilter<element_type, fp_type> *active_cf;
 
 public:
     DynamicCuckooFilter(uint32_t max_table_size, size_t bits_per_fp = 8, size_t entries_per_bucket = 4);
 
-    CuckooFilter<element_type, fp_type>* nextCF(CuckooFilter<element_type, fp_type>* cf);
+    CuckooFilter<element_type, fp_type> *nextCF(CuckooFilter<element_type, fp_type> *cf);
 
     void storeVictim(Victim &victim);
 
@@ -36,18 +36,17 @@ public:
 
     bool deleteElement(element_type element);
 
-    void removeCF(CuckooFilter<element_type, fp_type>* cf);
+    void removeCF(CuckooFilter<element_type, fp_type> *cf);
 
     void compact();
 
-    void sort(CuckooFilter<element_type, fp_type>** cfq, int count);
+    void sort(CuckooFilter<element_type, fp_type> **cfq, int count);
 
     uint32_t indexComplement(const size_t index, const uint32_t fp);
 
     void print();
 
 };
-
 
 
 

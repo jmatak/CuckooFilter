@@ -165,3 +165,6 @@ class CuckooTable<uint32_t>;
 
 template
 class CuckooTable<uint64_t>;
+
+template
+class CuckooTable<std::string>;
