@@ -28,7 +28,9 @@ uint32_t CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::f
 }
 
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
-inline void CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::firstPass(const element_type &item, uint32_t *fp, size_t *index) const {
+inline void
+CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::firstPass(const element_type &item, uint32_t *fp,
+                                                                                size_t *index) const {
     const u_int64_t hash_value = hash_function->hash(item);
 
     *index = getIndex(hash_value >> 32);
@@ -36,7 +38,8 @@ inline void CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>
 }
 
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
-uint32_t CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::indexComplement(const size_t index, const uint32_t fp) const {
+uint32_t CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::indexComplement(const size_t index,
+                                                                                               const uint32_t fp) const {
     uint32_t hv = fingerprintComplement(index, fp);
     return getIndex(hv);
 }
@@ -84,17 +87,21 @@ bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::delet
 
     firstPass(element, &fp, &i1);
     // TODO: this could be calculated only if necessary
-    i2 = indexComplement(i1, fp);
 
-    if (table->deleteFingerprint(fp, i1) || table->deleteFingerprint(fp, i2)) {
+    if (table->deleteFingerprint(fp, i1)) {
         this->element_count--;
-    } else if (victim.fp && fp == victim.fp &&
-               (i1 == victim.index || i2 == victim.index)) {
-        // element count -> upon agreement
-        victim.fp = 0;
-        return true;
     } else {
-        return false;
+        i2 = indexComplement(i1, fp);
+        if (table->deleteFingerprint(fp, i2)) {
+            this->element_count--;
+        } else if (victim.fp && fp == victim.fp &&
+                   (i1 == victim.index || i2 == victim.index)) {
+            // element count -> upon agreement
+            victim.fp = 0;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     if (victim.fp) {
@@ -114,10 +121,14 @@ bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::conta
     size_t i1, i2;
 
     firstPass(element, &fp, &i1);
+    if (table->containsFingerprint(i1, fp)) {
+        return true;
+    }
+
     i2 = indexComplement(i1, fp);
 
     bool match = victim.fp && (fp == victim.fp) && (i1 == victim.index || i2 == victim.index);
-    return match || table->containsFingerprint(i1, i2, fp);
+    return match || table->containsFingerprint(i2, fp);
 }
 
 
@@ -154,8 +165,33 @@ size_t CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::get
     return this->table->getTableSize();
 }
 
+
 template
-class CuckooFilter<std::string>;
+class CuckooFilter<std::size_t, 4, 4, std::uint8_t>;
 
 template
 class CuckooFilter<std::size_t, 4, 8, std::uint8_t>;
+
+template
+class CuckooFilter<std::size_t, 4, 12, std::uint16_t>;
+
+template
+class CuckooFilter<std::size_t, 4, 16, std::uint16_t>;
+
+template
+class CuckooFilter<std::size_t, 2, 32, std::uint32_t>;
+
+template
+class CuckooFilter<std::string, 4, 4, std::uint8_t>;
+
+template
+class CuckooFilter<std::string, 4, 8, std::uint8_t>;
+
+template
+class CuckooFilter<std::string, 4, 12, std::uint16_t>;
+
+template
+class CuckooFilter<std::string, 4, 16, std::uint16_t>;
+
+template
+class CuckooFilter<std::string, 2, 32, std::uint32_t>;

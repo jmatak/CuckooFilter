@@ -63,15 +63,18 @@ size_t CuckooTable<entries_per_bucket, bits_per_fp, fp_type>::fingerprintCount(c
 }
 
 template<size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
-void CuckooTable<entries_per_bucket, bits_per_fp, fp_type>::insertFingerprint(const size_t i, const size_t j, const uint32_t fp) {
+void CuckooTable<entries_per_bucket, bits_per_fp, fp_type>::insertFingerprint(const size_t i, const size_t j,
+                                                                              const uint32_t fp) {
     const uint8_t *bucket = buckets[i].data;
     uint32_t efp = fp & fp_mask;
     bit_manager->write(j, bucket, efp);
 }
 
 template<size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
-inline bool CuckooTable<entries_per_bucket, bits_per_fp, fp_type>::replacingFingerprintInsertion(const size_t i, const uint32_t fp,
-                                                                const bool eject, uint32_t &prev_fp) {
+inline bool
+CuckooTable<entries_per_bucket, bits_per_fp, fp_type>::replacingFingerprintInsertion(const size_t i, const uint32_t fp,
+                                                                                     const bool eject,
+                                                                                     uint32_t &prev_fp) {
     for (size_t j = 0; j < entries_per_bucket; j++) {
         if (getFingerprint(i, j) == 0) {
             insertFingerprint(i, j, fp);
@@ -96,7 +99,8 @@ bool CuckooTable<entries_per_bucket, bits_per_fp, fp_type>::containsFingerprint(
 }
 
 template<size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
-bool CuckooTable<entries_per_bucket, bits_per_fp, fp_type>::containsFingerprint(const size_t i1, const size_t i2, const uint32_t fp) {
+bool CuckooTable<entries_per_bucket, bits_per_fp, fp_type>::containsFingerprint(const size_t i1, const size_t i2,
+                                                                                const uint32_t fp) {
     const uint8_t *b1 = buckets[i1].data;
     const uint8_t *b2 = buckets[i2].data;
 
@@ -145,4 +149,16 @@ void CuckooTable<entries_per_bucket, bits_per_fp, fp_type>::printTable() {
 }
 
 template
+class CuckooTable<4, 4, uint8_t>;
+
+template
 class CuckooTable<4, 8, uint8_t>;
+
+template
+class CuckooTable<4, 12, uint16_t>;
+
+template
+class CuckooTable<4, 16, uint16_t>;
+
+template
+class CuckooTable<2, 32, uint32_t>;

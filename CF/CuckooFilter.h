@@ -24,7 +24,8 @@ struct Victim {
     size_t index;
 };
 
-template<typename element_type, size_t entries_per_bucket = 4, size_t bits_per_fp = 8, typename fp_type = uint8_t>
+
+template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 class CuckooFilter {
 private:
     uint32_t fp_mask{};
