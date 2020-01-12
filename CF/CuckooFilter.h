@@ -24,11 +24,11 @@ struct Victim {
     size_t index;
 };
 
-template<typename element_type, typename fp_type = uint8_t>
+template<typename element_type, size_t entries_per_bucket = 4, size_t bits_per_fp = 8, typename fp_type = uint8_t>
 class CuckooFilter {
 private:
     uint32_t fp_mask{};
-    CuckooTable<fp_type> *table;
+    CuckooTable<entries_per_bucket, bits_per_fp, fp_type> *table;
     size_t element_count;
     HashFunction *hash_function;
     Victim victim;
@@ -48,7 +48,7 @@ public:
 
     size_t total_kicks = 0;
 
-    CuckooFilter(uint32_t max_table_size, size_t bits_per_fp = 8, size_t entries_per_bucket = 4);
+    CuckooFilter(uint32_t max_table_size);
 
     ~CuckooFilter();
 

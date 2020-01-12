@@ -10,7 +10,7 @@
 #include "BitManager.h"
 
 
-template<typename fp_type, size_t entries_per_bucket=4, size_t bits_per_fp=8>
+template<size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 class CuckooTable {
 
 private:
@@ -21,7 +21,6 @@ private:
     BitManager<fp_type> *bit_manager;
 
     struct Bucket {
-        // TODO: stack vs heap?
         uint8_t data[bytes_per_bucket];
     };
     Bucket *buckets;
