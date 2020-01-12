@@ -3,7 +3,6 @@
 
 //TODO: make the hashFunctions static
 
-
 HashFunction::HashFunction() {
     srand(1);
     for (auto v : {&multiply_, &add_}) {
@@ -27,7 +26,6 @@ uint64_t HashFunction::cityHashFunction(uint32_t *buff, size_t len) {
     return CityHash64(buf, len);
 }
 
-
 /**
  * CityHash hash function for string type
  *
@@ -50,8 +48,6 @@ uint64_t HashFunction::cityHashFunction(std::string *buff, size_t len) {
 uint64_t HashFunction::hash(std::string key) const {
     return cityHashFunction(&key, (size_t) key.size());
 }
-
-
 
 /**
  * Hash function for integer keys

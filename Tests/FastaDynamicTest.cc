@@ -99,7 +99,6 @@ int main(int argc, char **argv) {
 //                  << fpRate << "%\n";
     }
 
-
     std::cout << "\nAvg insertion time: " << insTotalTime / n
               << "[µs] (for " << numInserted << " elements)" << std::endl;
     std::cout << "Avg lookup time: " << contTotalTime / n
