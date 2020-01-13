@@ -1,7 +1,7 @@
 #include "../ArgParser/cxxopts.hpp"
-#include "../DCF/DynamicCuckooFilter.h"
-#include "../FASTA/FastaReader.h"
-#include "../FASTA/FastaIterator.h"
+#include "../DCF/dynamic_cuckoo_filter.h"
+#include "../FASTA/fasta_reader.cpp"
+#include "../FASTA/fasta_iterator.h"
 #include <chrono>
 
 
@@ -11,10 +11,10 @@ int insertKmers(DynamicCuckooFilter<string, fp_type> *filter, FastaIterator *ite
     int numOfInserted = 0;
     while (iterator->hasNext()) {
         string kmere = iterator->next();
-        numOfInserted++;
         if (!filter->insertElement(kmere)) {
             break;
         }
+        numOfInserted++;
     }
 
     return numOfInserted;

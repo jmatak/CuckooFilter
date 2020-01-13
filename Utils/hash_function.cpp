@@ -1,5 +1,5 @@
+#include <iostream>
 #include "hash_function.h"
-
 
 //TODO: make the hashFunctions static
 
@@ -34,10 +34,26 @@ uint64_t HashFunction::cityHashFunction(uint32_t *buff, size_t len) {
  * @return String hash
  */
 uint64_t HashFunction::cityHashFunction(std::string *buff, size_t len) {
-    char *buf = (char *) buff;
-    uint64_t h = CityHash64(buf, len);
+//    uint64_t hash[2];
+//    MurmurHash3_x86_128(buff->c_str(), len, 5, hash);
+//    return hash[0];
+    uint64_t h = CityHash64(buff->c_str(), len);
 
     return h;
+}
+
+
+/**
+ * MurmurHash3 hash function for string type
+ *
+ * @param buff  Buffer for string hash
+ * @param len  Length of string
+ * @return String hash
+ */
+uint64_t HashFunction::murmurHash3Function(std::string *buff, size_t len) {
+    uint64_t hash[2];
+    MurmurHash3_x86_128(buff->c_str(), len, 5, hash);
+    return hash[0];
 }
 
 /**
@@ -46,6 +62,8 @@ uint64_t HashFunction::cityHashFunction(std::string *buff, size_t len) {
  * @return Hash function for string
  */
 uint64_t HashFunction::hash(std::string key) const {
+//    return murmurHash3Function(&key, (size_t) key.size());
+//    return std::hash<std::string>{}(key);
     return cityHashFunction(&key, (size_t) key.size());
 }
 

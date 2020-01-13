@@ -6,7 +6,8 @@
 
 
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
-int insertIntsInRange(CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type> *filter, size_t from, size_t to) {
+int insertIntsInRange(CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type> *filter, size_t from,
+                      size_t to) {
     assert(from < to);
 
     size_t numInserted = 0;
@@ -20,7 +21,8 @@ int insertIntsInRange(CuckooFilter<element_type, entries_per_bucket, bits_per_fp
 
 
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
-void containsIntsInRange(CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type> *filter, size_t from, size_t to) {
+void containsIntsInRange(CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type> *filter, size_t from,
+                         size_t to) {
     for (size_t i = from; i < to; i++) {
         assert(filter->containsElement(i));
     }
@@ -40,7 +42,8 @@ float getFPRate(CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_t
 }
 
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
-void deleteAllInRange(CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type> *filter, size_t from, size_t to) {
+void
+deleteAllInRange(CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type> *filter, size_t from, size_t to) {
     for (size_t i = from; i < to; i++) {
         filter->deleteElement(i);
     }
@@ -48,18 +51,14 @@ void deleteAllInRange(CuckooFilter<element_type, entries_per_bucket, bits_per_fp
 
 
 int main(int argc, char **argv) {
-
-
-
-
-        size_t tableSize = 100000;
+    size_t tableSize = 10000;
 //    size_t tableSize = 32768;
 
     //Elements inserted in the filter are from 0 to numOfElements
     size_t numOfElements = tableSize;
 //    size_t numOfElements = 32768;
 
-    int n = 10;
+    int n = 1;
 
     static const size_t fs = 16;
 
@@ -83,6 +82,7 @@ int main(int argc, char **argv) {
         std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
         CuckooFilter<size_t, 4, fs, uint16_t> filter(tableSize);
+        std::cout << "Filter size: " << sizeof(filter) << std::endl;
 
         std::chrono::steady_clock::time_point insBegin = std::chrono::steady_clock::now();
         numInserted = insertIntsInRange(&filter, from, to);

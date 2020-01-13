@@ -1,5 +1,5 @@
 #include "../ArgParser/cxxopts.hpp"
-#include "../DCF/DynamicCuckooFilter.h"
+#include "../DCF/dynamic_cuckoo_filter.h"
 #include <chrono>
 
 
@@ -45,10 +45,10 @@ void deleteAll(DynamicCuckooFilter<size_t, fp_type> *filter, size_t from, size_t
 
 
 int main(int argc, char **argv) {
-    size_t tableSize = 100;
+    size_t tableSize = 1000;
 
     //Elements inserted in the filter are from 0 to numOfElements
-    size_t numOfElements = 10000;
+    size_t numOfElements = 100;
 
     int n = 30;
 

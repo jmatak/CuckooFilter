@@ -4,6 +4,7 @@
 
 #include <random>
 #include "city.h"
+#include "murmur_hash3.h"
 
 #define HASH_A 54059
 #define HASH_B 76963
@@ -27,6 +28,8 @@ public:
     static uint64_t cityHashFunction(uint32_t *buff, size_t len);
 
     static uint64_t cityHashFunction(std::string *buff, size_t len);
+
+    static uint64_t murmurHash3Function(std::string *buff, size_t len);
 };
 
 
