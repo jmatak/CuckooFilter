@@ -1,10 +1,14 @@
 #include "../ArgParser/cxxopts.hpp"
 #include "../DCF/dynamic_cuckoo_filter.h"
 #include <chrono>
+#include <fstream>
 
+static const size_t bits_per_fp = 16;
+static const size_t entries_per_bucket = 4;
+typedef size_t element_type;
+typedef uint16_t fp_type;
 
-template<typename fp_type>
-int insertIntsInRange(DynamicCuckooFilter<size_t, fp_type> *filter, size_t from, size_t to) {
+int insertIntsInRange(DynamicCuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type> *filter, size_t from, size_t to) {
     assert(from < to);
 
     size_t numInserted = 0;
@@ -17,14 +21,14 @@ int insertIntsInRange(DynamicCuckooFilter<size_t, fp_type> *filter, size_t from,
 }
 
 template<typename fp_type>
-void containsIntsInRange(DynamicCuckooFilter<size_t, fp_type> *filter, size_t from, size_t to) {
+void containsIntsInRange(DynamicCuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type> *filter, size_t from, size_t to) {
     for (size_t i = from; i < to; i++) {
         assert(filter->containsElement(i));
     }
 }
 
 template<typename fp_type>
-float getFPRate(DynamicCuckooFilter<size_t, fp_type> *filter, size_t from, size_t to) {
+float getFPRate(DynamicCuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type> *filter, size_t from, size_t to) {
     size_t total_queries = 0;
     size_t false_queries = 0;
     for (size_t i = from; i < to; i++) {
@@ -37,7 +41,7 @@ float getFPRate(DynamicCuckooFilter<size_t, fp_type> *filter, size_t from, size_
 }
 
 template<typename fp_type>
-void deleteAll(DynamicCuckooFilter<size_t, fp_type> *filter, size_t from, size_t to) {
+void deleteAll(DynamicCuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type> *filter, size_t from, size_t to) {
     for (size_t i = from; i < to; i++) {
         filter->deleteElement(i);
     }
@@ -45,10 +49,10 @@ void deleteAll(DynamicCuckooFilter<size_t, fp_type> *filter, size_t from, size_t
 
 
 int main(int argc, char **argv) {
-    size_t tableSize = 1000;
+    size_t tableSize = 1000000;
 
     //Elements inserted in the filter are from 0 to numOfElements
-    size_t numOfElements = 100;
+    size_t numOfElements = tableSize;
 
     int n = 30;
 
@@ -59,16 +63,21 @@ int main(int argc, char **argv) {
 
     size_t from = 0;
     size_t to = numOfElements;
+
     size_t numInserted;
+    float numInsertedTot = 0;
+
     float fpRate;
+    float fpRateTot = 0;
 
     for (size_t i = 0; i < n; ++i) {
         std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
-        DynamicCuckooFilter<size_t, uint16_t> filter(tableSize, 16, 4);
+        DynamicCuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type> filter(tableSize);
 
         std::chrono::steady_clock::time_point insBegin = std::chrono::steady_clock::now();
         numInserted = insertIntsInRange(&filter, from, to);
+        numInsertedTot += numInserted;
         std::chrono::steady_clock::time_point insEnd = std::chrono::steady_clock::now();
         insTotalTime += std::chrono::duration_cast<std::chrono::microseconds>(insEnd - insBegin).count();
 
@@ -78,6 +87,7 @@ int main(int argc, char **argv) {
         contTotalTime += std::chrono::duration_cast<std::chrono::microseconds>(containsEnd - containsBegin).count();
 
         fpRate = getFPRate(&filter, to, 2 * to);
+        fpRateTot += fpRate;
 
         std::chrono::steady_clock::time_point delBegin = std::chrono::steady_clock::now();
         deleteAll(&filter, from, numInserted);
@@ -93,6 +103,25 @@ int main(int argc, char **argv) {
                   << fpRate << "%\n";
     }
 
+    std::ofstream myfile("/home/josip/CLionProjects/CF/Tests/test4_1000000.txt");
+    if (myfile.is_open()) {
+        myfile
+                << "# format -> '#' marks comment, 's' table size, 'fs' fingerprint size, 'ne' num of elements inserted to the table, 'n' num of iterations conducted in the test, 'u' unit of measurement,\n";
+        myfile
+                << "# 'ni' marks avg number of inserted elements, 'fp' the false positive rate,\n";
+        myfile << "# 'i' marks avg insertion time, 'l' avg lookup time and 'd' avg deletion time\n";
+        myfile << "s " << tableSize << "\n";
+        myfile << "fs " << bits_per_fp << "\n";
+        myfile << "ne " << numOfElements << "\n";
+        myfile << "n " << n << "\n";
+        myfile << "ni " << numInsertedTot / ((float) n) << "\n";
+        myfile << "fp " << fpRateTot / ((float) n) << "\n";
+        myfile << "u [µs]" << "\n";
+        myfile << "i " << insTotalTime / n << "\n";
+        myfile << "l " << contTotalTime / n << "\n";
+        myfile << "d " << delTotalTime / n << "\n";
+        myfile.close();
+    }
 
     std::cout << "\nAvg insertion time: " << insTotalTime / n
               << "[µs] (for " << numOfElements << " elements)" << std::endl;
