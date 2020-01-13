@@ -3,7 +3,7 @@
 
 #include <type_traits>
 #include "CuckooTable.h"
-#include "HashFunction.h"
+#include "../Utils/HashFunction.h"
 
 #define KICKS_MAX_COUNT 500
 
@@ -197,7 +197,7 @@ bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::inser
 
 /**
  * Inserting element into Cuckoo Filter. In first pass, fingerprint and index are calculated,
- * proceeding with insertion with reallocation,
+ * proceeding with insertion with reallocation.
  *
  * @param element Element for insertion
  * @return True if element is inserted
@@ -215,7 +215,7 @@ bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::inser
 
 /**
  *  Deleting element from Cuckoo Filter. Algorithm requires checking both primary and secondary index,
- *  if any of them contain fingerprint, it is removed from structure
+ *  if any of them contain fingerprint, it is removed from structure.
  *
  * @param element Element for deletion
  * @return True if item is deleted
@@ -226,7 +226,6 @@ bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::delet
     size_t i1, i2;
 
     firstPass(element, &fp, &i1);
-    // TODO: this could be calculated only if necessary
 
     if (table->deleteFingerprint(fp, i1)) {
         this->element_count--;

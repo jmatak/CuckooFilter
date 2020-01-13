@@ -61,6 +61,7 @@ bool DynamicCuckooFilter<element_type, fp_type>::insertElement(element_type elem
         active_cf = nextCF(active_cf);
     }
 
+    std::cout << element << std::endl;
     if (active_cf->insertElement(element)) {
         this->element_count++;
     } else {

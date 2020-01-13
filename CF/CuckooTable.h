@@ -8,7 +8,7 @@
 #include <exception>
 #include <iomanip>
 
-#include "BitManager.h"
+#include "../Utils/BitManager.h"
 
 
 template<size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>

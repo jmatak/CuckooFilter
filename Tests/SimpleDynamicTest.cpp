@@ -45,7 +45,7 @@ void deleteAll(DynamicCuckooFilter<size_t, fp_type> *filter, size_t from, size_t
 
 
 int main(int argc, char **argv) {
-    size_t tableSize = 10;
+    size_t tableSize = 100;
 
     //Elements inserted in the filter are from 0 to numOfElements
     size_t numOfElements = 10000;
