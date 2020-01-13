@@ -1,5 +1,5 @@
-#ifndef CUCKOOFILTER_BITMANAGER_H
-#define CUCKOOFILTER_BITMANAGER_H
+#ifndef CUCKOOFILTER_BIT_MANAGER_H
+#define CUCKOOFILTER_BIT_MANAGER_H
 
 #include <stdint.h>
 #include <stdlib.h>

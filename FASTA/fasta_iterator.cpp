@@ -1,5 +1,5 @@
-#include "FastaReader.h"
-#include "FastaIterator.h"
+#include "fasta_reader.h"
+#include "fasta_iterator.h"
 
 /**
  * Constructor of FASTA format iterator. Takes instace of FastaReader and initializes it for new reading.

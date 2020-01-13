@@ -2,7 +2,7 @@
 #define CUCKOOFILTER_FASTAITERATOR_H
 
 #include <string>
-#include "FastaReader.h"
+#include "fasta_reader.h"
 
 using namespace std;
 

@@ -1,4 +1,4 @@
-#include "FastaReader.h"
+#include "fasta_reader.h"
 
 
 /**

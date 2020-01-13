@@ -1,4 +1,4 @@
-#include "BitManager.h"
+#include "bit_manager.h"
 
 /**
  * Checking if fingerprint 4-bit fp is bitwise contained in 64-bit value.

@@ -1,4 +1,4 @@
-#include "HashFunction.h"
+#include "hash_function.h"
 
 
 //TODO: make the hashFunctions static
