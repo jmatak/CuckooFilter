@@ -32,3 +32,9 @@ Installation of CityHash lib provided by their authors:
     ./configure
     make all check CXXFLAGS="-g -O3"
     sudo make install
+    
+
+###### Contributors:
+   - Josip Jukić - Cuckoo table, Dynamic Cuckoo filter, BitManager
+   - Patrik Marić - Cuckoo filter, HashFunction, experiment scripts (Tests)
+   - Josip Matak - Dynamic Cuckoo table, FASTA reader, FASTA iterator, ArgParser
