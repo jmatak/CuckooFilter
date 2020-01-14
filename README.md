@@ -35,6 +35,6 @@ Installation of CityHash lib provided by their authors:
     
 
 ###### Contributors:
-   - Josip Jukić - Cuckoo filter, Cuckoo Table, Dynamic Cuckoo filter, BitManager
+   - Josip Jukić - Cuckoo filter, Cuckoo table, Dynamic Cuckoo filter, BitManager
    - Patrik Marić - Cuckoo filter, HashFunction, experiment scripts (Tests)
    - Josip Matak - Dynamic Cuckoo filter, FASTA reader, FASTA iterator, ArgParser
