@@ -18,7 +18,7 @@ Run demo of plain Cuckoo filter:
 ./CuckooFilter
 ```
 
-Run demo of plain dynamic Cuckoo filter:
+Run demo of dynamic Cuckoo filter:
 ```
 ./DynamicCuckooFilter
 ```
@@ -35,6 +35,6 @@ Installation of CityHash lib provided by their authors:
     
 
 ###### Contributors:
-   - Josip Jukić - Cuckoo filter, Cuckoo table, Dynamic Cuckoo filter, BitManager
-   - Patrik Marić - Cuckoo filter, HashFunction, experiment scripts (Tests)
-   - Josip Matak - Dynamic Cuckoo filter, FASTA reader, FASTA iterator, ArgParser
+   - Josip Jukić - Cuckoo Filter, Cuckoo Table, Dynamic Cuckoo Filter, Bit Manager
+   - Patrik Marić - Cuckoo Filter, Hash Function, experiment scripts (Tests)
+   - Josip Matak - Dynamic Cuckoo Filter, FASTA Reader, FASTA Iterator, Arg Parser
