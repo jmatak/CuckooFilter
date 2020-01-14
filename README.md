@@ -6,6 +6,8 @@ Link to the course pages: https://www.fer.unizg.hr/predmet/bio.
 
 Follow the next example for compiling and running the demo example of (Dynamic) Cuckoo filter implementation. 
 ```
+git clone git@github.com:jmatak/CuckooFilter.git
+cd CuckooFilter
 mkdir build
 cd build
 cmake ..
