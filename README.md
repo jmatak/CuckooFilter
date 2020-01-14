@@ -2,7 +2,7 @@
 Implementation of dynamic Cuckoo filter.
 This project is developed within the course Bioinformatics at Faculty of Electrical Engineering and Computing,
 University of Zagreb.
-Link to course pages: https://www.fer.unizg.hr/predmet/bio.
+Link to the course pages: https://www.fer.unizg.hr/predmet/bio.
 
 Follow the next example for compiling and running the code of Cuckoo filter implementation. 
 ```
