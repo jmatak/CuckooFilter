@@ -4,15 +4,26 @@ This project is developed within the course Bioinformatics at Faculty of Electri
 University of Zagreb.
 Link to the course pages: https://www.fer.unizg.hr/predmet/bio.
 
-Follow the next example for compiling and running the code of Cuckoo filter implementation. 
+Follow the next example for compiling and running the demo code of (Dynamic) Cuckoo filter implementation. 
 ```
 mkdir build
 cd build
 cmake ..
 make
-./CuckooFilter -f PATH_TO_FASTA
 ```
-  
+
+To run demo of plain Cuckoo filter:
+
+```
+./CuckooFilter
+```
+
+
+To run demo of plain dynamic Cuckoo filter:
+```
+./DynamicCuckooFilter
+```
+
 
 GitHub implementation: [CityHash](https://github.com/google/cityhash), fast and reliable hash function.
 
