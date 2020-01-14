@@ -1,5 +1,5 @@
-# CuckooFilter
-Implementation of cuckoo filter.
+# (Dynamic) Cuckoo Filter
+Implementation of dynamic Cuckoo filter.
 
 Follow the next example for compiling and running the code of Cuckoo filter implementation. 
 ```
