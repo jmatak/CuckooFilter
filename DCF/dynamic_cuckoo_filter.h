@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <fstream>
 #include "../Utils/hash_function.h"
 #include "../Utils/util.h"
 #include "cuckoo_filter.h"
@@ -184,6 +185,15 @@ public:
      * a lot of elements.
      */
     void compact();
+
+    /**
+     * Retrieves table size of a single cuckoo filter.
+     *
+     * @return table size
+     */
+    size_t getTableSize() {
+        return this->cf_table_size_;
+    }
 
 };
 
@@ -418,7 +428,6 @@ removeCF(CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>* c
     else{
         prev->next = cf->next;
     }
-    delete cf; // clear memory
     this->cf_count--;
 }
 
@@ -456,7 +465,6 @@ void DynamicCuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>
             cfq[i]->moveElements(cfq[j]);
             if (cfq[i]->is_empty) {
                 this->removeCF(cfq[i]);
-                this->cf_count--;
                 break; // move to next cf
             }
         }
@@ -464,6 +472,7 @@ void DynamicCuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>
 
     delete cfq;
 }
+
 
 template<typename element_type,
         size_t entries_per_bucket,

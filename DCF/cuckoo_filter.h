@@ -148,7 +148,7 @@ public:
     /**
      * Attempts to transfer elements of this cuckoo filter to
      * the table of cuckoo filter provided as argument.
-     * 
+     *
      * @param cf
      */
     void moveElements(CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>* cf);
@@ -290,7 +290,7 @@ moveElements(CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type
     uint32_t fp;
 
     for(size_t i = 0; i < table->table_size; i++){
-        for(int j = 0; j < table->entries_per_bucket; j++){
+        for(int j = 0; j < entries_per_bucket; j++){
             fp = table->getFingerprint(i, j);
 
             if(fp){
