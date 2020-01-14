@@ -202,8 +202,7 @@ refreshOnInsert() {
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::
 CuckooFilter(uint32_t table_size, BitManager<fp_type>* bit_manager, uint32_t fp_mask) {
-    // TODO: capacity?
-    capacity = size_t(0.9 * table_size);
+    capacity = size_t(0.9 * table_size * entries_per_bucket);
     element_count = 0;
     table = new CuckooTable<fp_type, entries_per_bucket, bits_per_fp>(table_size, bit_manager, fp_mask);
 }
