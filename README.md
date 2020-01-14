@@ -4,7 +4,7 @@ This project is developed within the course Bioinformatics at Faculty of Electri
 University of Zagreb.
 Link to the course pages: https://www.fer.unizg.hr/predmet/bio.
 
-Follow the next example for compiling and running the demo code of (Dynamic) Cuckoo filter implementation. 
+Follow the next example for compiling and running the demo example of (Dynamic) Cuckoo filter implementation. 
 ```
 mkdir build
 cd build
@@ -12,14 +12,13 @@ cmake ..
 make
 ```
 
-To run demo of plain Cuckoo filter:
+Run demo of plain Cuckoo filter:
 
 ```
 ./CuckooFilter
 ```
 
-
-To run demo of plain dynamic Cuckoo filter:
+Run demo of plain dynamic Cuckoo filter:
 ```
 ./DynamicCuckooFilter
 ```
