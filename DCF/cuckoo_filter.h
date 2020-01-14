@@ -2,49 +2,160 @@
 
 #define kicks_max_count 500
 
+/**
+ *
+ * Cuckoo filter is a space-efficient probabilistic data structure that is used to test whether an
+ * element is a member of a set, like a Bloom filter does. False positive matches are possible, but
+ * false negatives are not – in other words, a query returns either "possibly in set" or "definitely not
+ * in set". Constructing Cuckoo Filter with specific table size, number of bits per fingerprint and number
+ * of entries per bucket.
+ *
+ * @tparam element_type Working element type
+ * @tparam entries_per_bucket Number of entries in bucket
+ * @tparam bits_per_fp  Number of bits in fingerprint
+ * @tparam fp_type Fingerprint type
+ */
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 class CuckooFilter {
 
 private:
+    // table for storing elements' fingerprints
     CuckooTable<fp_type, entries_per_bucket, bits_per_fp>* table;
+    // capacity for the filter, if it is exceeded, the filter is regarded as full
     size_t capacity;
 
+    /**
+     * Gets index from previously calculated hash value.
+     *
+     * @param hash_value Hash value
+     * @return Index out of hash value
+     */
     inline size_t getIndex(uint32_t hv) const;
 
+    /**
+     * Calculating second index from previous index and calculated fingerprint
+     *  $i2 = i1 \oplus hash(f)$\;
+     *
+     * @param index Previously calculated index
+     * @param fp Element fingerprint
+     * @return Secondary index calculated from fingerprint and previous index
+     */
     inline uint32_t indexComplement(const size_t index, const uint32_t fp) const;
 
+    /**
+     * Refreshes attributes that count total number of elements
+     * and checks if filter is empty.
+     */
     inline void refreshOnDelete();
 
+    /**
+     * Refreshes attributes that count total number of elements
+     * and checks if filter is full.
+     */
     inline void refreshOnInsert();
 
 public:
 
+    // pointer to previous cuckoo filter in linked list
     CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>* prev = NULL;
+    // pointer to next cuckoo filter in linked list
     CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>* next = NULL;
 
+    // true if filter is full, false otherwise
     bool is_full = false;
+    // true if filter is empty, false otherwise
     bool is_empty = true;
 
+    // number of stored elements
     size_t element_count;
 
+    /**
+     * A cuckoo filter is a space-efficient probabilistic data structure that is used to test whether an
+     * element is a member of a set, like a Bloom filter does. False positive matches are possible, but
+     * false negatives are not – in other words, a query returns either "possibly in set" or "definitely not
+     * in set". Constructing Cuckoo Filter with specific table size, number of bits per fingerprint and number
+     * of entries per bucket.
+     *
+     * @param max_table_size Maximum table size
+     */
     explicit CuckooFilter(uint32_t table_size,
                           BitManager<fp_type>* bit_manager,
                           uint32_t fp_mask);
 
+    /**
+     * Inserting element into Cuckoo Filter. In first pass, fingerprint and index are calculated,
+     * proceeding with insertion with reallocation.
+     *
+     * @param fp
+     * @param index
+     * @param victim
+     * @return true if insertion is successfull, false otherwise
+     */
     bool insertElement(uint32_t fp, size_t index, Victim &victim);
 
-    bool deleteElement(uint32_t fp, size_t i1);
+    /**
+     * Checks if element is at given index i1 and deletes it if it is true.
+     * To boost efficiency, it calculates the second index only if the
+     * first one is not appropriate for the given fingerprint.
+     *
+     * @param i1
+     * @param fp
+     * @return true if deletion is successfull, false otherwise
+     */
+    bool deleteElement(size_t i1, uint32_t fp);
 
-    bool deleteElement(uint32_t fp, size_t i1, size_t i2);
+    /**
+     * Deletes fingerprint at indices i1 or i2.
+     *
+     * @param i1
+     * @param i2
+     * @param fp
+     * @return true if deletion is successfull, false otherwise
+     */
+    bool deleteElement(size_t i1, size_t i2, uint32_t fp);
 
-    bool containsElement(uint32_t fp, size_t i1);
+    /**
+     * Checks if element is at given index i1.
+     * To boost efficiency, it calculates the second index only if the
+     * first one is not appropriate for the given fingerprint.
+     *
+     * @param i1
+     * @param fp
+     * @return true if filter contains provided fingerprint
+     */
+    bool containsElement(size_t i1, uint32_t fp);
 
-    bool containsElement(uint32_t fp, size_t i1, size_t i2);
+    /**
+     * Checks if element is at given indices i1 or i2.
+     *
+     * @param i1
+     * @param i2
+     * @param fp
+     * @return true if filter contains provided fingerprint
+     */
+    bool containsElement(size_t i1, size_t i2, uint32_t fp);
 
+    /**
+     * Delegation function.
+     * Calls table's function replacementInsert with same parameters.
+     *
+     * @param i
+     * @param j
+     * @param fp
+     */
     void replacementInsert(size_t i, size_t j, uint32_t fp);
 
+    /**
+     * Attempts to transfer elements of this cuckoo filter to
+     * the table of cuckoo filter provided as argument.
+     * 
+     * @param cf
+     */
     void moveElements(CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>* cf);
 
+    /**
+     * Destructor that is in charge of memory clean-up.
+     */
     ~CuckooFilter();
 };
 
@@ -125,11 +236,11 @@ insertElement(uint32_t fp, size_t index, Victim &victim) {
 
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::
-deleteElement(uint32_t fp, size_t i1) {
+deleteElement(size_t i1, uint32_t fp) {
     bool deletion =
-            table->deleteFingerprint(fp, i1)
+            table->deleteFingerprint(i1, fp)
             ||
-            table->deleteFingerprint(fp, indexComplement(i1, fp));
+            table->deleteFingerprint(indexComplement(i1, fp), fp);
 
     if (deletion) {
         this->refreshOnDelete();
@@ -140,13 +251,12 @@ deleteElement(uint32_t fp, size_t i1) {
 
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::
-deleteElement(uint32_t fp, size_t i1, size_t i2) {
+deleteElement(size_t i1, size_t i2, uint32_t fp) {
     bool deletion =
-            table->deleteFingerprint(fp, i1)
+            table->deleteFingerprint(i1, fp)
             ||
-            table->deleteFingerprint(fp, i2);
+            table->deleteFingerprint(i2, fp);
 
-    // TODO: redundant checking, send CF object to deleteFingerprint function
     if (deletion) {
         this->refreshOnDelete();
     }
@@ -156,7 +266,7 @@ deleteElement(uint32_t fp, size_t i1, size_t i2) {
 
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::
-containsElement(uint32_t fp, size_t i1) {
+containsElement(size_t i1, uint32_t fp) {
     size_t i2 = indexComplement(i1, fp);
     return table->containsFingerprint(i1, i2, fp);
 }
@@ -164,7 +274,7 @@ containsElement(uint32_t fp, size_t i1) {
 
 template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, typename fp_type>
 bool CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::
-containsElement(uint32_t fp, size_t i1, size_t i2) {
+containsElement(size_t i1, size_t i2, uint32_t fp) {
     return table->containsFingerprint(i1, i2, fp);
 }
 

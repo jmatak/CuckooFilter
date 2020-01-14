@@ -11,30 +11,133 @@ class CuckooTable {
 
 private:
     static const size_t bytes_per_bucket = (entries_per_bucket * bits_per_fp) / 8;
+    // manipulation with bits
     BitManager<fp_type>* bit_manager;
 
     struct Bucket {
         uint8_t data[bytes_per_bucket];
     };
 
+    // element storage
     Bucket* buckets;
 
 public:
+    // number of buckets
     size_t table_size;
+    // mask for extracting lower bits
     uint32_t fp_mask;
 
+    /**
+     *
+     * @param table_size
+     * @param bit_manager
+     * @param fp_mask
+     */
     CuckooTable(size_t table_size, BitManager<fp_type>* bit_manager, uint32_t fp_mask);
+
+    /**
+     * Deleting all entries from cuckoo table and deleting bit manager.
+     */
     ~CuckooTable();
+
+    /**
+     * Retrieves table size.
+     * @return size of the table
+     */
     size_t getTableSize() const;
+
+    /**
+      * Returning maximum number of elements stored in table.
+      *
+      * @return Maximum possible number of elements
+      */
     size_t maxNoOfElements();
+
+    /**
+     *  Gets fingerprint in bucket i with entry position j
+     *
+     * @param i Index of bucket which stores element
+     * @param j Index of entry in bucket
+     * @return Fingerprint on position (i,j)
+     */
     inline uint32_t getFingerprint(size_t i, size_t j);
+
+    /**
+     * Count of stored fingerprints in bucket.
+     *
+     * @param i Bucket index
+     * @return Number of fingerprints stored in one bucket
+     */
     size_t fingerprintCount(size_t i) const;
+
+    /**
+     * Inserting fingerprint in bucket with index i and entry index j.
+     *
+     * @param i  Index of bucket
+     * @param j  Entry index
+     * @param fp Fingerprint for insertion
+     */
     inline void insertFingerprint(size_t i, size_t j, uint32_t fp);
+
+
+    /**
+     * Inserting fingerprint in bucket with index i and entry index j,
+     * but checks if spot is empty before insertion.
+     * Used for transfering elements from one filter to another.
+     *
+     * @param i  Index of bucket
+     * @param j  Entry index
+     * @param fp Fingerprint for insertion
+     */
     inline bool insertFingerprintIfEmpty(const size_t i, const size_t j, const uint32_t fp);
+
+    /**
+     * Method for inserting element in table. If another element is being replaced, his fingerprint is stored.
+     *
+     * @param i Bucket index
+     * @param fp Fingerprint for storing
+     * @param eject True if element is being ejected from table
+     * @param prev_fp Fingerprint of element being replaced
+     * @return True if element is inserted without replacing
+     */
     inline bool replacingFingerprintInsertion(size_t i, uint32_t j, bool eject, uint32_t& prev_fp);
+
+    /**
+     * Checking if bucket i contains fingerprint fp
+     *
+     * @param i Bucket index
+     * @param fp Fingerprint for checking
+     * @return  True if fingerprint is contained
+     */
     bool containsFingerprint(size_t i, uint32_t fp);
+
+    /**
+     * Checking if fingerprint is contained in bucket with index i1 and i2.
+     *
+     * @param i1 First checking index
+     * @param i2 Second checking index
+     * @param fp Fingerprint to check
+     * @return True if element is contained
+     */
     bool containsFingerprint(size_t i1, size_t i2, uint32_t fp);
+
+    /**
+     * Deleting fingerprint from table. If fingerprint is not presented in certain bucket, returning false.
+     *
+     * @param fp  Fingerprint for deletion
+     * @param i Index of bucket where fingerprint is stored.
+     * @return True if element is deleted
+     */
     bool deleteFingerprint(const size_t, const uint32_t);
+
+    /**
+     * Deleting fingerprint from table with both indices precomputed.
+     *
+     * @param i1
+     * @param i2
+     * @param fp
+     * @return True if element is deleted
+     */
     bool deleteFingerprint(const size_t i1, const size_t i2, const uint32_t fp);
 
 

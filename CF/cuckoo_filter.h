@@ -87,7 +87,6 @@ private:
 public:
 
     /**
-     *
      * A cuckoo filter is a space-efficient probabilistic data structure that is used to test whether an
      * element is a member of a set, like a Bloom filter does. False positive matches are possible, but
      * false negatives are not – in other words, a query returns either "possibly in set" or "definitely not
@@ -183,7 +182,7 @@ template<typename element_type, size_t entries_per_bucket, size_t bits_per_fp, t
 inline void
 CuckooFilter<element_type, entries_per_bucket, bits_per_fp, fp_type>::
 firstPass(const element_type &item, uint32_t *fp, size_t *index) const {
-    const u_int64_t hash_value = hash_function_->hash(item);
+    const uint64_t hash_value = hash_function_->hash(item);
     *index = getIndex(hash_value >> 32);
     *fp = fingerprint(hash_value);
 }

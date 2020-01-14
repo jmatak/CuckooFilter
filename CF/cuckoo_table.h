@@ -13,14 +13,19 @@ class CuckooTable {
 
 private:
     static const size_t bytes_per_bucket = (entries_per_bucket * bits_per_fp) / 8;
+    // number of buckets
     size_t table_size;
+    // mask for extracting lower bits
     uint32_t fp_mask;
 
+    // manipulation with bits
     BitManager<fp_type> *bit_manager;
 
     struct Bucket {
         uint8_t data[bytes_per_bucket];
     };
+
+    // element storage
     Bucket *buckets;
 
 public:

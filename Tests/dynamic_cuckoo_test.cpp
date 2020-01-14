@@ -49,12 +49,12 @@ void deleteAll(DynamicCuckooFilter<element_type, entries_per_bucket, bits_per_fp
 
 
 int main(int argc, char **argv) {
-    size_t tableSize = 1000000;
+    size_t tableSize = 100;
 
     //Elements inserted in the filter are from 0 to numOfElements
-    size_t numOfElements = tableSize;
+    size_t numOfElements = 10000;
 
-    int n = 30;
+    int n = 1;
 
     double totalTime = 0.;
     double insTotalTime = 0.;
@@ -103,25 +103,25 @@ int main(int argc, char **argv) {
                   << fpRate << "%\n";
     }
 
-    std::ofstream myfile("/home/josip/CLionProjects/CF/Tests/test4_1000000.txt");
-    if (myfile.is_open()) {
-        myfile
-                << "# format -> '#' marks comment, 's' table size, 'fs' fingerprint size, 'ne' num of elements inserted to the table, 'n' num of iterations conducted in the test, 'u' unit of measurement,\n";
-        myfile
-                << "# 'ni' marks avg number of inserted elements, 'fp' the false positive rate,\n";
-        myfile << "# 'i' marks avg insertion time, 'l' avg lookup time and 'd' avg deletion time\n";
-        myfile << "s " << tableSize << "\n";
-        myfile << "fs " << bits_per_fp << "\n";
-        myfile << "ne " << numOfElements << "\n";
-        myfile << "n " << n << "\n";
-        myfile << "ni " << numInsertedTot / ((float) n) << "\n";
-        myfile << "fp " << fpRateTot / ((float) n) << "\n";
-        myfile << "u [µs]" << "\n";
-        myfile << "i " << insTotalTime / n << "\n";
-        myfile << "l " << contTotalTime / n << "\n";
-        myfile << "d " << delTotalTime / n << "\n";
-        myfile.close();
-    }
+//    std::ofstream myfile("/home/josip/CLionProjects/CF/Tests/test4_1000000.txt");
+//    if (myfile.is_open()) {
+//        myfile
+//                << "# format -> '#' marks comment, 's' table size, 'fs' fingerprint size, 'ne' num of elements inserted to the table, 'n' num of iterations conducted in the test, 'u' unit of measurement,\n";
+//        myfile
+//                << "# 'ni' marks avg number of inserted elements, 'fp' the false positive rate,\n";
+//        myfile << "# 'i' marks avg insertion time, 'l' avg lookup time and 'd' avg deletion time\n";
+//        myfile << "s " << tableSize << "\n";
+//        myfile << "fs " << bits_per_fp << "\n";
+//        myfile << "ne " << numOfElements << "\n";
+//        myfile << "n " << n << "\n";
+//        myfile << "ni " << numInsertedTot / ((float) n) << "\n";
+//        myfile << "fp " << fpRateTot / ((float) n) << "\n";
+//        myfile << "u [µs]" << "\n";
+//        myfile << "i " << insTotalTime / n << "\n";
+//        myfile << "l " << contTotalTime / n << "\n";
+//        myfile << "d " << delTotalTime / n << "\n";
+//        myfile.close();
+//    }
 
     std::cout << "\nAvg insertion time: " << insTotalTime / n
               << "[µs] (for " << numOfElements << " elements)" << std::endl;
